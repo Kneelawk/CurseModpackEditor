@@ -334,6 +334,34 @@
     -fx-background-insets: 0, 0 0 1 0;
 }
 
+/* Tab Panes */
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: -obsidian-background2-color;
+    -fx-background-insets: 0;
+}
+
+.tab-pane .tab {
+    -fx-background-color: -obsidian-background2-color;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.tab-pane .tab .focus-indicator {
+    -fx-border-color: transparent;
+    -fx-border-insets: 0;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: -obsidian-background2-hover-color;
+    -fx-background-insets: 0;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: -obsidian-highlight-color, -obsidian-background3-color;
+    -fx-background-insets: 0, 0 0 2 0;
+}
+
 /* Text Fields */
 
 .text-field {
