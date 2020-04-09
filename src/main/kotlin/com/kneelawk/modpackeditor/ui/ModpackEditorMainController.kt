@@ -18,6 +18,12 @@ class ModpackEditorMainController : Controller() {
 
     private var previousDir: File = Path.of(model.modpackLocation.value).toAbsolutePath().parent.toFile()
 
+    fun newModpack() {
+        val newScope = Scope()
+        setInScope(ModpackModel(), newScope)
+        find<CreateModpackView>(newScope).openWindow(escapeClosesWindow = false, owner = null)
+    }
+
     fun saveModpack() {
         running.value = true
         runAsync {
@@ -47,7 +53,6 @@ class ModpackEditorMainController : Controller() {
     }
 
     fun openModpack() {
-        running.value = true
         chooseFile("Open Modpack", arrayOf(FileChooser.ExtensionFilter("Curse Modpack Files", "*.zip")),
             previousDir, FileChooserMode.Single).firstOrNull()?.let {
             val location = it.absolutePath
@@ -64,12 +69,8 @@ class ModpackEditorMainController : Controller() {
 
                     setInScope(newModpack, newScope)
                     find<ModpackEditorMainView>(newScope).openWindow(escapeClosesWindow = false, owner = null)
-
-                    running.value = false
                 }
             }
-        } ?: run {
-            running.value = false
         }
     }
 

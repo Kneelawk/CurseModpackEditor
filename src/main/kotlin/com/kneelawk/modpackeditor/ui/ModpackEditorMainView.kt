@@ -15,6 +15,11 @@ class ModpackEditorMainView : View("Modpack Editor") {
         padding = insets(0.0)
         menubar {
             menu("File") {
+                item("New...", "Shortcut+N") {
+                    action {
+                        c.newModpack()
+                    }
+                }
                 item("Save", "Shortcut+S") {
                     action {
                         c.saveModpack()
