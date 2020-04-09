@@ -227,6 +227,13 @@
     -fx-background-insets: 0, 1 0 1 0;
 }
 
+/* Scroll Pane */
+
+.scroll-pane {
+    -fx-background-color: -obsidian-background1-color;
+    -fx-background-insets: 0;
+}
+
 /* Spinners */
 
 .spinner {

@@ -1,7 +1,6 @@
 package com.kneelawk.modpackeditor.ui
 
-import javafx.beans.property.ReadOnlyObjectProperty
-import javafx.beans.property.ReadOnlyObjectWrapper
+import javafx.scene.layout.Priority
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
@@ -46,18 +45,28 @@ class ModpackEditorMainView : View("Modpack Editor") {
         vbox {
             padding = insets(25.0)
             spacing = 10.0
+            maxHeight = Double.MAX_VALUE
+            vgrow = Priority.ALWAYS
+
             label(c.model.modpackName).style {
                 fontSize = 36.px
                 fontWeight = FontWeight.BOLD
             }
 
             tabpane {
+                vgrow = Priority.ALWAYS
                 enableWhen(c.running.not())
                 tab<ModpackDetailsView> {
                     closableProperty().unbind()
                     isClosable = false
                     textProperty().unbind()
                     text = "Details"
+                }
+                tab<ModpackModListView> {
+                    closableProperty().unbind()
+                    isClosable = false
+                    textProperty().unbind()
+                    text = "Mod List"
                 }
             }
         }

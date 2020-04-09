@@ -503,22 +503,22 @@ data class GameVersionLatestFileJson(
         /**
          * The version of the game that this file is for.
          */
-        override var gameVersion: String,
+        override var gameVersion: String = "1.0",
 
         /**
          * The file id of the file referenced.
          */
-        override var projectFileId: Long,
+        override var projectFileId: Long = 0,
 
         /**
          * The file name of the file referenced.
          */
-        override var projectFileName: String,
+        override var projectFileName: String = "",
 
         /**
          * The type of the file referenced.
          */
-        override var fileType: Long
+        override var fileType: Long = 0
 ) : JsonModel, GameVersionLatestFileData {
 
     /**

@@ -19,8 +19,13 @@ class CurseApi : Controller() {
     /**
      * Gets info about an addon.
      */
-    fun getAddon(projectId: Long): AddonJson {
-        return rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/$projectId").one().toModel()
+    fun getAddon(projectId: Long): AddonJson? {
+        val response = rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/$projectId")
+        return if (response.status == Rest.Response.Status.OK) {
+            response.one().toModel()
+        } else {
+            null
+        }
     }
 
     /**
@@ -28,7 +33,7 @@ class CurseApi : Controller() {
      */
     fun getAddonFile(addonId: AddonId): AddonFileJson? {
         val response =
-                rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/${addonId.projectId}/file/${addonId.projectId}")
+                rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/${addonId.projectId}/file/${addonId.fileId}")
         return if (response.status == Rest.Response.Status.OK) {
             response.one().toModel()
         } else {

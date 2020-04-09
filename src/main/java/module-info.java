@@ -1,10 +1,12 @@
 module com.kneelawk.modpackeditor {
     exports com.kneelawk.modpackeditor;
+    exports com.kneelawk.modpackeditor.cache;
     exports com.kneelawk.modpackeditor.curse;
     exports com.kneelawk.modpackeditor.data;
     exports com.kneelawk.modpackeditor.data.curseapi;
     exports com.kneelawk.modpackeditor.data.jumploader;
     exports com.kneelawk.modpackeditor.data.manifest;
+    exports com.kneelawk.modpackeditor.data.version;
     exports com.kneelawk.modpackeditor.net;
     exports com.kneelawk.modpackeditor.ui;
 
