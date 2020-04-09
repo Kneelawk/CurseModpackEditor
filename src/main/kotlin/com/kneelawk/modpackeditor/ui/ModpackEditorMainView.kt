@@ -25,6 +25,11 @@ class ModpackEditorMainView : View("Modpack Editor") {
                         c.saveModpackAs()
                     }
                 }
+                item("Open...", "Shortcut+O") {
+                    action {
+                        c.openModpack()
+                    }
+                }
                 item("Duplicate...") {
                     action {
                         c.duplicateModpack()

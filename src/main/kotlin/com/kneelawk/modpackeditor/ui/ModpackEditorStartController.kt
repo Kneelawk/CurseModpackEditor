@@ -19,7 +19,7 @@ class ModpackEditorStartController : Controller() {
 
     fun openModpack() {
         running.value = true
-        chooseFile("Modpack Location", arrayOf(FileChooser.ExtensionFilter("Curse Modpack Files", "*.zip")),
+        chooseFile("Open Modpack", arrayOf(FileChooser.ExtensionFilter("Curse Modpack Files", "*.zip")),
             previousDir, FileChooserMode.Single).firstOrNull()?.let {
             val location = it.absolutePath
             previousDir = it.parentFile

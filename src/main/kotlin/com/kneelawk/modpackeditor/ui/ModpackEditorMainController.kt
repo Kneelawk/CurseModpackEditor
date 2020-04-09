@@ -1,5 +1,6 @@
 package com.kneelawk.modpackeditor.ui
 
+import com.kneelawk.modpackeditor.curse.ModpackFile
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.FileChooser
 import tornadofx.*
@@ -39,6 +40,33 @@ class ModpackEditorMainController : Controller() {
             runAsync {
                 model.commit()
                 runLater { running.value = false }
+            }
+        } ?: run {
+            running.value = false
+        }
+    }
+
+    fun openModpack() {
+        running.value = true
+        chooseFile("Open Modpack", arrayOf(FileChooser.ExtensionFilter("Curse Modpack Files", "*.zip")),
+            previousDir, FileChooserMode.Single).firstOrNull()?.let {
+            val location = it.absolutePath
+            previousDir = it.parentFile
+
+            runAsync {
+                val newModpack = ModpackModel(ModpackFile(it.toPath()))
+
+                runLater {
+                    val newScope = Scope()
+
+                    newModpack.rawModpackLocation.value = location
+                    newModpack.modpackLocation.value = location
+
+                    setInScope(newModpack, newScope)
+                    find<ModpackEditorMainView>(newScope).openWindow(escapeClosesWindow = false, owner = null)
+
+                    running.value = false
+                }
             }
         } ?: run {
             running.value = false
