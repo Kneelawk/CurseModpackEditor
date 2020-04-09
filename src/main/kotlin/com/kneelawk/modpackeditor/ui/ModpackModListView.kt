@@ -10,7 +10,10 @@ class ModpackModListView : View() {
     private val c: ModpackModListController by inject()
 
     override val root = vbox {
+        padding = insets(10.0)
         spacing = 10.0
+
+        label(c.model.modpackMods.stringBinding { "${it!!.size} Mods" })
 
         hbox {
             spacing = 10.0
