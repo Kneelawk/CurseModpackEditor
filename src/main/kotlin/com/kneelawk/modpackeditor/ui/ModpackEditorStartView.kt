@@ -8,6 +8,8 @@ import tornadofx.*
  * Modpack Editor Main View.
  */
 class ModpackEditorStartView : View("Modpack Editor") {
+    private val c: ModpackEditorStartController by inject()
+
     init {
         with(primaryStage) {
             width = 1280.0
@@ -21,6 +23,8 @@ class ModpackEditorStartView : View("Modpack Editor") {
         padding = insets(25.0)
         spacing = 10.0
         alignment = Pos.CENTER
+
+        enableWhen(c.running.not())
 
         label("Modpack Editor") {
             style {
@@ -39,7 +43,7 @@ class ModpackEditorStartView : View("Modpack Editor") {
         button("Open Existing Modpack") {
             prefWidth = 300.0
             action {
-                replaceWith(find<OpenModpackView>())
+                c.openModpack()
             }
         }
     }
