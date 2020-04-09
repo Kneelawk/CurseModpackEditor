@@ -10,15 +10,6 @@ import tornadofx.*
 class ModpackEditorStartView : View("Modpack Editor") {
     private val c: ModpackEditorStartController by inject()
 
-    init {
-        with(primaryStage) {
-            width = 1280.0
-            height = 800.0
-            minWidth = 500.0
-            minHeight = 400.0
-        }
-    }
-
     override val root = vbox {
         padding = insets(25.0)
         spacing = 10.0
@@ -45,6 +36,15 @@ class ModpackEditorStartView : View("Modpack Editor") {
             action {
                 c.openModpack()
             }
+        }
+    }
+
+    override fun onBeforeShow() {
+        with(currentStage!!) {
+            width = 1280.0
+            height = 800.0
+            minWidth = 500.0
+            minHeight = 400.0
         }
     }
 }

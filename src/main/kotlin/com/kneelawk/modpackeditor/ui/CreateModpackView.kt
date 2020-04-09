@@ -37,4 +37,13 @@ class CreateModpackView : View("Create Modpack") {
     init {
         c.model.validate(decorateErrors = false)
     }
+
+    override fun onBeforeShow() {
+        with(currentStage!!) {
+            width = 1280.0
+            height = 800.0
+            minWidth = 500.0
+            minHeight = 400.0
+        }
+    }
 }

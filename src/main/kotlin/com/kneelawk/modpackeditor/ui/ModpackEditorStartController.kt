@@ -6,6 +6,7 @@ import javafx.stage.FileChooser
 import tornadofx.Controller
 import tornadofx.FileChooserMode
 import tornadofx.chooseFile
+import tornadofx.runLater
 import java.io.File
 
 /**
@@ -26,7 +27,7 @@ class ModpackEditorStartController : Controller() {
             runAsync {
                 val modpack = ModpackModel(ModpackFile(it.toPath()))
 
-                tornadofx.runLater {
+                runLater {
                     modpack.rawModpackLocation.value = location
                     modpack.modpackLocation.value = location
                     setInScope(modpack)

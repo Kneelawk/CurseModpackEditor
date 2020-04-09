@@ -1,15 +1,11 @@
 package com.kneelawk.modpackeditor.ui
 
-import com.kneelawk.modpackeditor.curse.ModpackFile
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.FileChooser
-import tornadofx.Controller
-import tornadofx.FileChooserMode
-import tornadofx.chooseFile
-import tornadofx.runLater
+import tornadofx.*
 import java.io.File
 import java.nio.file.Path
-import kotlin.reflect.KProperty1
+import java.nio.file.Paths
 
 /**
  * The controller for the main modpack editor view.
@@ -19,7 +15,7 @@ class ModpackEditorMainController : Controller() {
 
     val running = SimpleBooleanProperty(false)
 
-    var previousDir = Path.of(model.modpackLocation.value).toAbsolutePath().parent.toFile()
+    private var previousDir: File = Path.of(model.modpackLocation.value).toAbsolutePath().parent.toFile()
 
     fun saveModpack() {
         running.value = true
@@ -39,10 +35,43 @@ class ModpackEditorMainController : Controller() {
             }
             model.modpackLocation.value = path
             previousDir = it.parentFile
+
+            runAsync {
+                model.commit()
+                runLater { running.value = false }
+            }
+        } ?: run {
+            running.value = false
         }
-        runAsync {
-            model.commit()
-            runLater { running.value = false }
+    }
+
+    fun duplicateModpack() {
+        running.value = true
+        chooseFile("Duplicate Modpack Destination",
+            arrayOf(FileChooser.ExtensionFilter("Curse Modpack Files", "*.zip")),
+            previousDir, FileChooserMode.Save).firstOrNull()?.let {
+            var path = it.absolutePath
+            if (!path.endsWith(".zip")) {
+                path += ".zip"
+            }
+
+            runAsync {
+                val newModpack = ModpackModel(model.openModpack.clone(Paths.get(path)))
+
+                runLater {
+                    val newScope = Scope()
+
+                    newModpack.rawModpackLocation.value = path
+                    newModpack.modpackLocation.value = path
+
+                    setInScope(newModpack, newScope)
+                    find<ModpackEditorMainView>(newScope).openWindow(escapeClosesWindow = false, owner = null)
+
+                    running.value = false
+                }
+            }
+        } ?: run {
+            running.value = false
         }
     }
 }

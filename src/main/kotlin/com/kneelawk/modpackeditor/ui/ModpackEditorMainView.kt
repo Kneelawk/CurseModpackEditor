@@ -25,6 +25,11 @@ class ModpackEditorMainView : View("Modpack Editor") {
                         c.saveModpackAs()
                     }
                 }
+                item("Duplicate...") {
+                    action {
+                        c.duplicateModpack()
+                    }
+                }
             }
         }
 
@@ -50,5 +55,14 @@ class ModpackEditorMainView : View("Modpack Editor") {
 
     init {
         titleProperty.bind(c.model.modpackName)
+    }
+
+    override fun onBeforeShow() {
+        with(currentStage!!) {
+            width = 1280.0
+            height = 800.0
+            minWidth = 500.0
+            minHeight = 400.0
+        }
     }
 }
