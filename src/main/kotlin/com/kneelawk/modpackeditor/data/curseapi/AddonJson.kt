@@ -27,12 +27,12 @@ data class AddonJson(
         /**
          * A list of authors that worked on this addon.
          */
-        override var authors: List<AuthorJson> = emptyList(),
+        override var authors: MutableList<AuthorJson> = arrayListOf(),
 
         /**
          * a list of attachments (often images) associated with this addon.
          */
-        override var attachments: List<AttachmentJson> = emptyList(),
+        override var attachments: MutableList<AttachmentJson> = arrayListOf(),
 
         /**
          * The url of this addon on Curse's website.
@@ -62,12 +62,12 @@ data class AddonJson(
         /**
          * A selection of this addon's latest file.
          */
-        override var latestFiles: List<AddonFileJson> = emptyList(),
+        override var latestFiles: MutableList<AddonFileJson> = arrayListOf(),
 
         /**
          * A list of addon categories (Tech, Magic, Aesthetic, etc.) this addon is associated with.
          */
-        override var categories: List<CategoryJson> = emptyList(),
+        override var categories: MutableList<CategoryJson> = arrayListOf(),
 
         /**
          * This addon's status with the CurseForge service.
@@ -92,7 +92,7 @@ data class AddonJson(
         /**
          * A list of references to the latest files for recent game versions.
          */
-        override var gameVersionLatestFiles: List<GameVersionLatestFileJson> = emptyList(),
+        override var gameVersionLatestFiles: MutableList<GameVersionLatestFileJson> = arrayListOf(),
 
         /**
          * Is this addon featured by Curse?
@@ -162,20 +162,20 @@ data class AddonJson(
         with(json) {
             add("id", id)
             add("name", name)
-            add("authors", authors.toJSON())
-            add("attachments", attachments.toJSON())
+            add("authors", authors)
+            add("attachments", attachments)
             add("websiteUrl", websiteUrl)
             add("gameId", gameId)
             add("summary", summary)
             defaultFileId?.let { add("defaultFileId", it) }
             add("downloadCount", downloadCount)
-            add("latestFiles", latestFiles.toJSON())
-            add("categories", categories.toJSON())
+            add("latestFiles", latestFiles)
+            add("categories", categories)
             add("status", status)
             add("primaryCategoryId", primaryCategoryId)
             add("categorySection", categorySection)
             add("slug", slug)
-            add("gameVersionLatestFiles", gameVersionLatestFiles.toJSON())
+            add("gameVersionLatestFiles", gameVersionLatestFiles)
             add("isFeatured", isFeatured)
             popularityScore?.let { add("popularityScore", it) }
             gamePopularityRank?.let { add("gamePopularityRank", it) }
@@ -200,20 +200,20 @@ data class AddonJson(
         with(json) {
             id = reqLong("id")
             name = reqString("name")
-            authors = jsonArray("authors")?.toModel() ?: emptyList()
-            attachments = jsonArray("attachments")?.toModel() ?: emptyList()
+            authors = jsonArray("authors")?.toModel() ?: arrayListOf()
+            attachments = jsonArray("attachments")?.toModel() ?: arrayListOf()
             websiteUrl = reqString("websiteUrl")
             gameId = long("gameId") ?: 432
             summary = reqString("summary")
             defaultFileId = long("defaultFileId")
             downloadCount = reqDouble("downloadCount")
-            latestFiles = jsonArray("latestFiles")?.toModel() ?: emptyList()
-            categories = jsonArray("categories")?.toModel() ?: emptyList()
+            latestFiles = jsonArray("latestFiles")?.toModel() ?: arrayListOf()
+            categories = jsonArray("categories")?.toModel() ?: arrayListOf()
             status = reqLong("status")
             primaryCategoryId = reqLong("primaryCategoryId")
             categorySection = reqJsonObject("categorySection").toModel()
             slug = reqString("slug")
-            gameVersionLatestFiles = jsonArray("gameVersionLatestFiles")?.toModel() ?: emptyList()
+            gameVersionLatestFiles = jsonArray("gameVersionLatestFiles")?.toModel() ?: arrayListOf()
             isFeatured = boolean("isFeatured") ?: false
             popularityScore = double("popularityScore")
             gamePopularityRank = long("gamePopularityRank")

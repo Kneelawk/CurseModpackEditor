@@ -67,13 +67,13 @@ data class AutoconfigJson(
 }
 
 data class JarsJson(
-        override var minecraft: List<MinecraftJson> = emptyList(),
-        override var maven: List<MavenJson> = emptyList()
+        override var minecraft: MutableList<MinecraftJson> = arrayListOf(),
+        override var maven: MutableList<MavenJson> = arrayListOf()
 ) : JsonModel, JarsData {
     override fun toJSON(json: JsonBuilder) {
         with(json) {
-            add("minecraft", minecraft.toJSON())
-            add("maven", maven.toJSON())
+            add("minecraft", minecraft)
+            add("maven", maven)
         }
     }
 
@@ -82,7 +82,7 @@ data class JarsJson(
     override fun updateModel(json: JsonObject) {
         with(json) {
             minecraft = reqJsonArray("minecraft").toModel()
-            maven = jsonArray("maven")?.toModel() ?: emptyList()
+            maven = jsonArray("maven")?.toModel() ?: arrayListOf()
         }
     }
 }

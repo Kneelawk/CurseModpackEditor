@@ -1,0 +1,20 @@
+/*
+ * This stylesheet is the general purpose stylesheet of CurseMeta3ModpackDownloader.
+ */
+
+.error-label {
+    -fx-text-fill: firebrick;
+}
+
+.text-field:error {
+    -fx-border-color: firebrick;
+}
+
+.progress-bar:done {
+    -fx-accent: #00bb03;
+}
+
+.recommended-icon:recommended {
+    -fx-background-color: #aaaaaa;
+    -fx-shape: "M 12.312163,14.637931 7.999119,12.369612 3.6854013,14.63665 4.5098966,9.8337524 1.0208029,6.4317164 5.8434134,5.731681 8.0007526,1.3620687 10.156794,5.732321 14.979197,6.4337881 11.489094,9.8347879 Z"
+}

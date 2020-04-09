@@ -14,7 +14,7 @@ data class ManifestJson(
         override var version: String = "0.0.1",
         override var author: String = "Unknown",
         override var projectId: Long? = null,
-        override var files: List<FileJson> = emptyList(),
+        override var files: MutableList<FileJson> = arrayListOf(),
         override var overrides: String = "overrides",
         override var additionalJavaArgs: String? = null
 ) : JsonModel, ManifestData {
@@ -27,7 +27,7 @@ data class ManifestJson(
             add("version", version)
             add("author", author)
             projectId?.let { add("projectID", it) }
-            add("files", files.toJSON())
+            add("files", files)
             add("overrides", overrides)
             additionalJavaArgs?.let { add("additionalJavaArgs", it) }
         }
@@ -44,7 +44,7 @@ data class ManifestJson(
             version = string("version") ?: "0.0.1"
             author = string("author") ?: "Unknown"
             projectId = long("projectID")
-            files = jsonArray("files")?.toModel() ?: emptyList()
+            files = jsonArray("files")?.toModel() ?: arrayListOf()
             overrides = string("overrides") ?: "overrides"
             additionalJavaArgs = string("additionalJavaArgs")
         }
@@ -77,12 +77,12 @@ data class FileJson(
 
 data class MinecraftJson(
         override var version: String = "1.0",
-        override var modLoaders: List<ModLoaderJson> = emptyList()
+        override var modLoaders: MutableList<ModLoaderJson> = arrayListOf()
 ) : JsonModel, MinecraftData {
     override fun toJSON(json: JsonBuilder) {
         with(json) {
             add("version", version)
-            add("modLoaders", modLoaders.toJSON())
+            add("modLoaders", modLoaders)
         }
     }
 
@@ -91,7 +91,7 @@ data class MinecraftJson(
     override fun updateModel(json: JsonObject) {
         with(json) {
             version = reqString("version")
-            modLoaders = jsonArray("modLoaders")?.toModel() ?: emptyList()
+            modLoaders = jsonArray("modLoaders")?.toModel() ?: arrayListOf()
         }
     }
 }

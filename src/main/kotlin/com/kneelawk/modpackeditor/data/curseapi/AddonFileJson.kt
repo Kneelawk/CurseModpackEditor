@@ -33,10 +33,10 @@ data class AddonFileJson(
         override var downloadUrl: String = "",
         override var isAlternate: Boolean = false,
         override var alternateFileId: Long? = null,
-        override var dependencies: List<DependencyJson> = emptyList(),
+        override var dependencies: MutableList<DependencyJson> = arrayListOf(),
         override var isAvailable: Boolean = true,
         override var packageFingerprint: Long? = null,
-        override var gameVersion: List<String> = emptyList(),
+        override var gameVersion: MutableList<String> = arrayListOf(),
         override var serverPackFileId: Long? = null,
         override var hasInstallScript: Boolean = false,
         override var gameVersionDateReleased: LocalDateTime? = null
@@ -53,7 +53,7 @@ data class AddonFileJson(
             add("downloadUrl", downloadUrl)
             add("isAlternate", isAlternate)
             alternateFileId?.let { add("alternateFileId", it) }
-            add("dependencies", dependencies.toJSON())
+            add("dependencies", dependencies)
             add("isAvailable", isAvailable)
             packageFingerprint?.let { add("packageFingerprint", it) }
             add("gameVersion", gameVersion)
@@ -77,10 +77,10 @@ data class AddonFileJson(
             downloadUrl = reqString("downloadUrl")
             isAlternate = boolean("isAlternate") ?: false
             alternateFileId = long("alternateFileId")
-            dependencies = jsonArray("dependencies")?.toModel() ?: emptyList()
+            dependencies = jsonArray("dependencies")?.toModel() ?: arrayListOf()
             isAvailable = boolean("isAvailable") ?: true
             packageFingerprint = long("packageFingerprint")
-            gameVersion = reqJsonArray("gameVersion").map { (it as JsonString).string }
+            gameVersion = reqJsonArray("gameVersion").map { (it as JsonString).string }.toMutableList()
             serverPackFileId = long("serverPackFileId")
             gameVersionDateReleased =
                     string("gameVersionDateReleased")?.let { LocalDateTime.parse(it, DateTimeFormatter.ISO_DATE_TIME) }
