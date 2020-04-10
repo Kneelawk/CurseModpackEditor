@@ -8,6 +8,8 @@ import tornadofx.FileChooserMode
 import tornadofx.chooseFile
 import tornadofx.runLater
 import java.io.File
+import java.io.IOException
+import kotlin.reflect.KProperty1
 
 /**
  * Created by Kneelawk on 4/8/20.
@@ -25,14 +27,23 @@ class ModpackEditorStartController : Controller() {
             previousDir = it.parentFile
 
             runAsync {
-                val modpack = ModpackModel(ModpackFile(it.toPath()))
+                try {
+                    val modpack = ModpackModel(ModpackFile(it.toPath()))
 
-                runLater {
-                    modpack.rawModpackLocation.value = location
-                    modpack.modpackLocation.value = location
-                    setInScope(modpack)
-                    find<ModpackEditorStartView>().replaceWith(find<ModpackEditorMainView>())
-                    running.value = false
+                    runLater {
+                        modpack.rawModpackLocation.value = location
+                        modpack.modpackLocation.value = location
+                        setInScope(modpack)
+                        find<ModpackEditorStartView>().replaceWith(find<ModpackEditorMainView>())
+                        running.value = false
+                    }
+                } catch (e: IOException) {
+                    runLater {
+                        find<ModpackEditorStartView>().openInternalWindow(
+                            find<ErrorOpeningModpackDialog>(mapOf<KProperty1<ErrorOpeningModpackDialog, Any>, Any>(
+                                ErrorOpeningModpackDialog::modpackName to it.name,
+                                ErrorOpeningModpackDialog::callback to { running.value = false })))
+                    }
                 }
             }
         } ?: run {
