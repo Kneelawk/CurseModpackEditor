@@ -5,8 +5,10 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.FileChooser
 import tornadofx.*
 import java.io.File
+import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.reflect.KProperty1
 
 /**
  * The controller for the main modpack editor view.
@@ -59,16 +61,25 @@ class ModpackEditorMainController : Controller() {
             previousDir = it.parentFile
 
             runAsync {
-                val newModpack = ModpackModel(ModpackFile(it.toPath()))
+                try {
+                    val newModpack = ModpackModel(ModpackFile(it.toPath()))
 
-                runLater {
-                    val newScope = Scope()
+                    runLater {
+                        val newScope = Scope()
 
-                    newModpack.rawModpackLocation.value = location
-                    newModpack.modpackLocation.value = location
+                        newModpack.rawModpackLocation.value = location
+                        newModpack.modpackLocation.value = location
 
-                    setInScope(newModpack, newScope)
-                    find<ModpackEditorMainView>(newScope).openWindow(escapeClosesWindow = false, owner = null)
+                        setInScope(newModpack, newScope)
+                        find<ModpackEditorMainView>(newScope).openWindow(escapeClosesWindow = false, owner = null)
+                    }
+                } catch (e: IOException) {
+                    runLater {
+                        find<ModpackEditorMainView>().openInternalWindow(
+                            find<ErrorOpeningModpackDialog>(mapOf<KProperty1<ErrorOpeningModpackDialog, Any>, Any>(
+                                ErrorOpeningModpackDialog::modpackName to it.name,
+                                ErrorOpeningModpackDialog::callback to { running.value = false })))
+                    }
                 }
             }
         }
