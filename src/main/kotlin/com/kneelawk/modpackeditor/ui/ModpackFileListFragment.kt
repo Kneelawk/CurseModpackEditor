@@ -1,10 +1,7 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.data.manifest.FileJson
-import com.kneelawk.modpackeditor.ui.util.AsynchronousLoader
-import com.kneelawk.modpackeditor.ui.util.ElementUtils
-import com.kneelawk.modpackeditor.ui.util.ModRemoveEvent
-import com.kneelawk.modpackeditor.ui.util.ModRequiredEvent
+import com.kneelawk.modpackeditor.ui.util.*
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.image.Image
@@ -126,6 +123,13 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
         }
         hbox {
             alignment = Pos.CENTER
+            button("Details") {
+                enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
+                action {
+                    c.startEditing(item)
+                    fire(ModDetailsEvent(item, scope))
+                }
+            }
             button("Remove") {
                 enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
                 action {

@@ -28,7 +28,12 @@ class ResourceCaches : Controller() {
                     .build(CacheLoader.from { key: Long? -> Optional.fromNullable(curseApi.getAddon(key!!)) })
     private val fileCache: LoadingCache<AddonIdWrapper, Optional<AddonFileJson>> =
             CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(Duration.ofMinutes(2)).build(
-                CacheLoader.from { key: AddonIdWrapper? -> Optional.fromNullable(curseApi.getAddonFile(key!!.addonId)) })
+                CacheLoader.from { key: AddonIdWrapper? ->
+                    Optional.fromNullable(curseApi.getAddonFile(key!!.addonId))
+                })
+    val detailsCache: LoadingCache<Long, Optional<String>> =
+            CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(Duration.ofMinutes(2))
+                    .build(CacheLoader.from { key: Long? -> Optional.fromNullable(curseApi.getAddonDetails(key!!)) })
 
     fun getAddonFile(addonId: AddonId): Optional<AddonFileJson> {
         return fileCache[AddonIdWrapper(addonId)]

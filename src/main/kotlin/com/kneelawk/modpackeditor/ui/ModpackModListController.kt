@@ -2,11 +2,13 @@ package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.data.AddonIdWrapper
 import com.kneelawk.modpackeditor.data.manifest.FileJson
+import com.kneelawk.modpackeditor.ui.mods.ModDetailsFragment
 import com.kneelawk.modpackeditor.ui.util.*
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.SimpleSetProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
+import javafx.stage.Modality
 import tornadofx.Controller
 import tornadofx.objectBinding
 import kotlin.reflect.KProperty1
@@ -26,6 +28,9 @@ class ModpackModListController : Controller() {
         }
         subscribe<ModRequiredEvent> {
             changeModRequired(it.addonId, it.required)
+        }
+        subscribe<ModDetailsEvent> {
+            showModDetails(it.addonId)
         }
     }
 
@@ -53,7 +58,9 @@ class ModpackModListController : Controller() {
                 },
                 AreYouSureDialog::closeCallback to {
                     finishEditing(addonId)
-                })))
+                }
+            ))
+        )
     }
 
     private fun changeModRequired(addonId: FileJson, required: Boolean) {
@@ -65,5 +72,14 @@ class ModpackModListController : Controller() {
             }
         }
         finishEditing(addonId)
+    }
+
+    private fun showModDetails(addonId: FileJson) {
+        find<ModDetailsFragment>(mapOf<KProperty1<ModDetailsFragment, Any>, Any>(
+            ModDetailsFragment::projectId to addonId.projectId,
+            ModDetailsFragment::closeCallback to {
+                finishEditing(addonId)
+            }
+        )).openModal(modality = Modality.NONE)
     }
 }

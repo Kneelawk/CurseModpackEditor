@@ -9,6 +9,8 @@ module com.kneelawk.modpackeditor {
     exports com.kneelawk.modpackeditor.data.version;
     exports com.kneelawk.modpackeditor.net;
     exports com.kneelawk.modpackeditor.ui;
+    exports com.kneelawk.modpackeditor.ui.mods;
+    exports com.kneelawk.modpackeditor.ui.util;
 
     requires kotlin.stdlib;
 
@@ -22,4 +24,5 @@ module com.kneelawk.modpackeditor {
     requires javafx.base;
     requires javafx.controls;
     requires javafx.graphics;
+    requires javafx.web;
 }

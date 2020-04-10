@@ -29,6 +29,18 @@ class CurseApi : Controller() {
     }
 
     /**
+     * Gets an addon's details string.
+     */
+    fun getAddonDetails(projectId: Long): String? {
+        val response = rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/$projectId/description")
+        return if (response.status == Rest.Response.Status.OK) {
+            String(response.bytes())
+        } else {
+            null
+        }
+    }
+
+    /**
      * Gets info about an addon file.
      */
     fun getAddonFile(addonId: AddonId): AddonFileJson? {
