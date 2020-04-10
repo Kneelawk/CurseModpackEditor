@@ -1,25 +1,26 @@
 package com.kneelawk.modpackeditor.ui.mods
 
+import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
-import javafx.scene.text.FontWeight
 import tornadofx.*
 
 /**
- * Fragment that shows a mod's description.
+ * Fragment that show's a mod file's changelog.
  */
-class ModDetailsFragment : Fragment() {
-    val projectId: Long by param()
+class ModFileChangelogFragment : Fragment() {
+    val addonId: AddonId by param()
     val closeCallback: () -> Unit by param {}
 
     private val elementUtils: ElementUtils by inject()
     private val mainController: ModpackEditorMainController by inject()
 
     private val webStylesheet = javaClass.getResource("/com/kneelawk/modpackeditor/web.css").toExternalForm()
-    private val modName = SimpleStringProperty("")
-    private val descriptionTitle = mainController.modpackTitle.stringBinding(modName) { "$it - ${modName.value}" }
+    private val fileName = SimpleStringProperty("")
+    private val descriptionTitle =
+            mainController.modpackTitle.stringBinding(fileName) { "$it - ${fileName.value} Changelog" }
 
     override val root = vbox {
         padding = insets(10.0)
@@ -29,35 +30,33 @@ class ModDetailsFragment : Fragment() {
             spacing = 10.0
             imageview {
                 runAsync {
-                    val loaded = elementUtils.loadImage(projectId)
+                    val loaded = elementUtils.loadImage(addonId)
                     runLater { image = loaded }
                 }
             }
             label {
-                style {
-                    fontWeight = FontWeight.BOLD
-                    fontSize = 16.px
-                }
                 runAsync {
-                    val name = elementUtils.loadModName(projectId)
+                    val display = elementUtils.loadModFileDisplay(addonId)
                     runLater {
-                        modName.value = name
-                        text = name
+                        text = display
                     }
                 }
             }
-            label("by")
+            label("-")
             label {
                 runAsync {
-                    val author = elementUtils.loadModAuthor(projectId)
-                    runLater { text = author }
+                    val file = elementUtils.loadModFileName(addonId)
+                    runLater {
+                        fileName.value = file
+                        text = file
+                    }
                 }
             }
         }
         webview {
             engine.userStyleSheetLocation = webStylesheet
             runAsync {
-                val details = elementUtils.loadModDetails(projectId)
+                val details = elementUtils.loadModFileChangelog(addonId)
                 runLater { engine.loadContent(details) }
             }
         }

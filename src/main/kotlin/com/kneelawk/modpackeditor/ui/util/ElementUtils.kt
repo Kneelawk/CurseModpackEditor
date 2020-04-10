@@ -2,7 +2,7 @@ package com.kneelawk.modpackeditor.ui.util
 
 import com.kneelawk.modpackeditor.cache.ResourceCaches
 import com.kneelawk.modpackeditor.curse.AddonUtils
-import com.kneelawk.modpackeditor.data.manifest.FileJson
+import com.kneelawk.modpackeditor.data.AddonId
 import javafx.scene.image.Image
 import tornadofx.Controller
 
@@ -16,7 +16,7 @@ class ElementUtils : Controller() {
         return cache.imageCache[AddonUtils.getIconUrl(projectId?.let { cache.addonCache[it].orNull() })]
     }
 
-    fun loadImage(file: FileJson?): Image {
+    fun loadImage(file: AddonId?): Image {
         return loadImage(file?.projectId)
     }
 
@@ -49,7 +49,7 @@ class ElementUtils : Controller() {
         return projectId?.let { cache.addonCache[it].orNull()?.name } ?: "Unknown Addon"
     }
 
-    fun loadModName(file: FileJson?): String {
+    fun loadModName(file: AddonId?): String {
         return loadModName(file?.projectId)
     }
 
@@ -57,15 +57,20 @@ class ElementUtils : Controller() {
         return AddonUtils.getAuthorString(projectId?.let { cache.addonCache[it].orNull() })
     }
 
-    fun loadModAuthor(file: FileJson?): String {
+    fun loadModAuthor(file: AddonId?): String {
         return loadModAuthor(file?.projectId)
     }
 
-    fun loadModFileDisplay(file: FileJson?): String {
+    fun loadModFileChangelog(file: AddonId?): String {
+        return file?.let { id -> cache.getAddonFileChangelog(id).orNull()?.let { unescape(it) } }
+                ?: "Unable to load changelog."
+    }
+
+    fun loadModFileDisplay(file: AddonId?): String {
         return file?.let { cache.getAddonFile(it).orNull()?.displayName } ?: "Unknown"
     }
 
-    fun loadModFileName(file: FileJson?): String {
+    fun loadModFileName(file: AddonId?): String {
         return file?.let { cache.getAddonFile(it).orNull()?.fileName } ?: "unknown"
     }
 }

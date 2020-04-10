@@ -11,4 +11,6 @@ interface AddonId {
 /**
  * Simple file id implementation.
  */
-data class SimpleAddonId(override val projectId: Long, override val fileId: Long) : AddonId
+data class SimpleAddonId(override val projectId: Long, override val fileId: Long) : AddonId {
+    constructor(addonId: AddonId) : this(addonId.projectId, addonId.fileId)
+}

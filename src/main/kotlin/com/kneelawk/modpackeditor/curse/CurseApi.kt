@@ -54,6 +54,20 @@ class CurseApi : Controller() {
     }
 
     /**
+     * Gets info about an addon file.
+     */
+    fun getAddonFileChangelog(addonId: AddonId): String? {
+        val response =
+                rest.get(
+                    "https://addons-ecs.forgesvc.net/api/v2/addon/${addonId.projectId}/file/${addonId.fileId}/changelog")
+        return if (response.status == Rest.Response.Status.OK) {
+            String(response.bytes())
+        } else {
+            null
+        }
+    }
+
+    /**
      * Gets a list of addon files for the given project id.
      */
     fun getAddonFiles(projectId: Long): List<AddonFileJson> {

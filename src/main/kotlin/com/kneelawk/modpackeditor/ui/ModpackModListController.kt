@@ -1,8 +1,10 @@
 package com.kneelawk.modpackeditor.ui
 
-import com.kneelawk.modpackeditor.data.AddonIdWrapper
+import com.kneelawk.modpackeditor.data.AddonId
+import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import com.kneelawk.modpackeditor.ui.mods.ModDetailsFragment
+import com.kneelawk.modpackeditor.ui.mods.ModFileChangelogFragment
 import com.kneelawk.modpackeditor.ui.util.*
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.SimpleSetProperty
@@ -20,7 +22,7 @@ class ModpackModListController : Controller() {
     private val elementUtils: ElementUtils by inject()
     val model: ModpackModel by inject()
 
-    private val editingMods = SimpleSetProperty<AddonIdWrapper>(FXCollections.observableSet())
+    private val editingMods = SimpleSetProperty<SimpleAddonId>(FXCollections.observableSet())
 
     init {
         subscribe<ModRemoveEvent> {
@@ -32,18 +34,21 @@ class ModpackModListController : Controller() {
         subscribe<ModDetailsEvent> {
             showModDetails(it.addonId)
         }
+        subscribe<ModChangelogEvent> {
+            showModChangelog(it.addonId)
+        }
     }
 
     fun startEditing(addonId: FileJson) {
-        editingMods.add(AddonIdWrapper(addonId))
+        editingMods.add(SimpleAddonId(addonId))
     }
 
     fun finishEditing(addonId: FileJson) {
-        editingMods.remove(AddonIdWrapper(addonId))
+        editingMods.remove(SimpleAddonId(addonId))
     }
 
-    fun notEditingProperty(property: ObservableValue<FileJson>): BooleanBinding {
-        return editingMods.containsProperty(property.objectBinding { it?.let { AddonIdWrapper(it) } }).not()
+    fun notEditingProperty(property: ObservableValue<out AddonId>): BooleanBinding {
+        return editingMods.containsProperty(property.objectBinding { it?.let { SimpleAddonId(it) } }).not()
     }
 
     private fun removeMod(addonId: FileJson) {
@@ -78,6 +83,15 @@ class ModpackModListController : Controller() {
         find<ModDetailsFragment>(mapOf<KProperty1<ModDetailsFragment, Any>, Any>(
             ModDetailsFragment::projectId to addonId.projectId,
             ModDetailsFragment::closeCallback to {
+                finishEditing(addonId)
+            }
+        )).openModal(modality = Modality.NONE)
+    }
+
+    private fun showModChangelog(addonId: FileJson) {
+        find<ModFileChangelogFragment>(mapOf<KProperty1<ModFileChangelogFragment, Any>, Any>(
+            ModFileChangelogFragment::addonId to addonId,
+            ModFileChangelogFragment::closeCallback to {
                 finishEditing(addonId)
             }
         )).openModal(modality = Modality.NONE)

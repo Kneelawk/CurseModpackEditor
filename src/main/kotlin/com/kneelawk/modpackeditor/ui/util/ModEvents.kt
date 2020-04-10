@@ -18,3 +18,8 @@ class ModRequiredEvent(val addonId: FileJson, val required: Boolean, scope: Scop
  * Event fired when a mod list item's details button is clicked.
  */
 class ModDetailsEvent(val addonId: FileJson, scope: Scope) : FXEvent(scope = scope)
+
+/**
+ * Event fired when a mod list item's changelog button is clicked.
+ */
+class ModChangelogEvent(val addonId: FileJson, scope: Scope) : FXEvent(scope = scope)

@@ -123,11 +123,23 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
         }
         hbox {
             alignment = Pos.CENTER
-            button("Details") {
-                enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
-                action {
-                    c.startEditing(item)
-                    fire(ModDetailsEvent(item, scope))
+            vbox {
+                alignment = Pos.CENTER
+                button("Details") {
+                    maxWidth = Double.MAX_VALUE
+                    enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
+                    action {
+                        c.startEditing(item)
+                        fire(ModDetailsEvent(item, scope))
+                    }
+                }
+                button("Changelog") {
+                    maxWidth = Double.MAX_VALUE
+                    enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
+                    action {
+                        c.startEditing(item)
+                        fire(ModChangelogEvent(item, scope))
+                    }
                 }
             }
             button("Remove") {
