@@ -3,6 +3,7 @@ package com.kneelawk.modpackeditor.ui
 import com.kneelawk.modpackeditor.curse.CurseApi
 import com.kneelawk.modpackeditor.data.curseapi.MinecraftVersionData
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
+import javafx.collections.FXCollections
 import javafx.scene.layout.Priority
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -16,6 +17,7 @@ class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
     private val selectedVersion = objectProperty<MinecraftVersionData>(null)
 
     private val curseApi: CurseApi by inject()
+    private val model: ModpackModel by inject()
 
     override val root = vbox {
         padding = insets(25.0)
@@ -30,10 +32,22 @@ class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
             cellFormat {
                 text = it.versionString
             }
-            asyncItems {
-                curseApi.getMinecraftVersionList().sortedByDescending { MinecraftVersion.parse(it.versionString) }
-            }
             selectedVersion.bind(selectionModel.selectedItemProperty())
+            runAsync {
+                val versions = getMinecraftVersions()
+                runLater {
+                    if (items == null) {
+                        items = FXCollections.observableArrayList(versions)
+                    } else {
+                        items.setAll(versions)
+                    }
+                    versions.forEachIndexed { index, data ->
+                        if (data.versionString == model.minecraftVersion.value) {
+                            selectionModel.select(index)
+                        }
+                    }
+                }
+            }
             setOnMouseClicked {
                 if (it.clickCount == 2) {
                     close()
@@ -53,17 +67,18 @@ class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
                 }
             }
             button("Select") {
-                isDisable = selectedVersion.value == null
                 isDefaultButton = true
                 action {
                     close()
                     callback(Result.Select(selectedVersion.value!!))
                 }
-                selectedVersion.addListener { _, _, newValue ->
-                    isDisable = newValue == null
-                }
+                enableWhen(selectedVersion.isNotNull)
             }
         }
+    }
+
+    private fun getMinecraftVersions(): List<MinecraftVersionData> {
+        return curseApi.getMinecraftVersionList().sortedByDescending { MinecraftVersion.parse(it.versionString) }
     }
 
     sealed class Result {

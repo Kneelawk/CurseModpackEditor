@@ -20,6 +20,7 @@ class SelectModLoaderFragment : Fragment("Select a Forge Version") {
     private val onlyCompatible = booleanProperty(true)
 
     private val curseApi: CurseApi by inject()
+    private val model: ModpackModel by inject()
 
     override val root = vbox {
         padding = insets(25.0)
@@ -44,10 +45,22 @@ class SelectModLoaderFragment : Fragment("Select a Forge Version") {
         }
         listview(modLoaderList) {
             cellFragment(ModLoaderListFragment::class)
-            asyncItems {
-                getModLoaderList()
-            }
             selectedVersion.bind(selectionModel.selectedItemProperty())
+            runAsync {
+                val modLoaders = getModLoaderList()
+                runLater {
+                    if (items == null) {
+                        items = FXCollections.observableArrayList(modLoaders)
+                    } else {
+                        items.setAll(modLoaders)
+                    }
+                    modLoaders.forEachIndexed { index, data ->
+                        if (data.name == model.modLoaderVersion.value) {
+                            selectionModel.select(index)
+                        }
+                    }
+                }
+            }
             setOnMouseClicked {
                 if (it.clickCount == 2) {
                     close()
@@ -67,13 +80,12 @@ class SelectModLoaderFragment : Fragment("Select a Forge Version") {
                 }
             }
             button("Select") {
-                isDisable = selectedVersion.value == null
                 isDefaultButton = true
                 action {
                     close()
                     callback(Result.Select(selectedVersion.value!!))
                 }
-                enableWhen(booleanBinding(selectedVersion) { value != null })
+                enableWhen(selectedVersion.isNotNull)
             }
         }
     }
