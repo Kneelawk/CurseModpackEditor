@@ -22,7 +22,7 @@ class CreateModpackView : View("Create Modpack") {
         buttonbar {
             button("Cancel") {
                 action {
-                    replaceWith(find<ModpackEditorStartView>())
+                    replaceWith(find<ModpackEditorStartView>(Scope()))
                 }
             }
             button("Create Modpack") {
