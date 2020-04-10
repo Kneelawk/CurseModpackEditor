@@ -15,6 +15,9 @@ class ModpackModListController : Controller() {
         subscribe<ModRemoveEvent> {
             removeMod(it.addonId)
         }
+        subscribe<ModRequiredEvent> {
+            changeModRequired(it.addonId, it.required)
+        }
     }
 
     private fun removeMod(addonId: FileJson) {
@@ -25,5 +28,15 @@ class ModpackModListController : Controller() {
                     model.modpackMods.remove(addonId)
                 }
             })).openModal()
+    }
+
+    private fun changeModRequired(addonId: FileJson, required: Boolean) {
+        model.modpackMods.replaceAll {
+            if (it == addonId) {
+                FileJson(addonId.projectId, addonId.fileId, required)
+            } else {
+                it
+            }
+        }
     }
 }

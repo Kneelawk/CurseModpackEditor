@@ -21,6 +21,7 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
     private var modFileNameLoader: LabelLoader? = null
 
     override val root = hbox {
+        padding = insets(5.0)
         spacing = 10.0
         imageview {
             imageLoader = ImageLoader(this, itemProperty, { elementUtils.loadImage(it) }, { image = it })
@@ -54,6 +55,16 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                 label {
                     modFileNameLoader =
                             LabelLoader(this, itemProperty, { elementUtils.loadModFileName(it) }, { text = it })
+                }
+            }
+            checkbox("Required") {
+                item?.let { isSelected = it.required }
+                itemProperty.onChange { it?.let { isSelected = it.required } }
+                action {
+                    val required = isSelected
+                    if (required != item.required) {
+                        fire(ModRequiredEvent(item, isSelected, scope))
+                    }
                 }
             }
         }
