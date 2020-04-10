@@ -13,17 +13,23 @@ import java.util.concurrent.atomic.AtomicReference
  * Note: This asynchronous loader only stores a week reference to itself in the property listener.
  * A reference to this object must be kept alive in order for it to continue functioning.
  */
-class AsynchronousLoader<Key, UI, I>(private val element: UI, private val property: ObservableValue<Key>,
-                                     private val loader: (Key) -> I, private val handler: UI.(I) -> Unit) :
+class AsynchronousLoader<Key, UI, I>(private val element: UI, property: ObservableValue<Key>,
+                                     private val instantHandler: UI.(Key) -> Unit,
+                                     private val loader: (Key) -> I,
+                                     private val handler: UI.(I) -> Unit) :
         ChangeListener<Key> {
     private val lastRequest = AtomicReference<Key>()
 
     init {
         property.addListener(WeakChangeListener(this))
-        load(element, property.value, loader, handler)
+
+        val value = property.value
+        element.instantHandler(value)
+        load(element, value, loader, handler)
     }
 
     override fun changed(observable: ObservableValue<out Key>?, oldValue: Key, newValue: Key) {
+        element.instantHandler(newValue)
         load(element, newValue, loader, handler)
     }
 

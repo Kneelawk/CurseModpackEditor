@@ -23,8 +23,10 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
     override val root = hbox {
         padding = insets(5.0)
         spacing = 10.0
+        alignment = Pos.CENTER
         imageview {
-            imageLoader = ImageLoader(this, itemProperty, { elementUtils.loadImage(it) }, { image = it })
+            imageLoader =
+                    ImageLoader(this, itemProperty, { image = null }, { elementUtils.loadImage(it) }, { image = it })
         }
         vbox {
             spacing = 10.0
@@ -37,11 +39,14 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                         fontWeight = FontWeight.BOLD
                         fontSize = 16.px
                     }
-                    modNameLoader = LabelLoader(this, itemProperty, { elementUtils.loadModName(it) }, { text = it })
+                    modNameLoader = LabelLoader(this, itemProperty, { text = it?.projectId?.toString() ?: "" },
+                        { elementUtils.loadModName(it) }, { text = it })
                 }
                 label("by")
                 label {
-                    modAuthorLoader = LabelLoader(this, itemProperty, { elementUtils.loadModAuthor(it) }, { text = it })
+                    modAuthorLoader =
+                            LabelLoader(this, itemProperty, { text = "Loading..." }, { elementUtils.loadModAuthor(it) },
+                                { text = it })
                 }
             }
             hbox {
@@ -49,12 +54,14 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                 alignment = Pos.BOTTOM_LEFT
                 label {
                     modFileDisplayLoader =
-                            LabelLoader(this, itemProperty, { elementUtils.loadModFileDisplay(it) }, { text = it })
+                            LabelLoader(this, itemProperty, { text = it?.fileId?.toString() ?: "" },
+                                { elementUtils.loadModFileDisplay(it) }, { text = it })
                 }
                 label("-")
                 label {
                     modFileNameLoader =
-                            LabelLoader(this, itemProperty, { elementUtils.loadModFileName(it) }, { text = it })
+                            LabelLoader(this, itemProperty, { text = "loading..." },
+                                { elementUtils.loadModFileName(it) }, { text = it })
                 }
             }
             checkbox("Required") {
