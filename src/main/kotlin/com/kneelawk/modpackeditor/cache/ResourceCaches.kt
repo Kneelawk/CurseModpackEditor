@@ -16,10 +16,10 @@ class ResourceCaches : Controller() {
     private val curseApi: CurseApi by inject()
 
     val imageCache: LoadingCache<String, Image> =
-            CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(Duration.ofMinutes(10))
+            CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(Duration.ofMinutes(10))
                     .build(CacheLoader.from { key: String? -> Image(key, 64.0, 64.0, true, true, true) })
     val smallImageCache: LoadingCache<String, Image> =
-            CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(Duration.ofMinutes(10))
+            CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(Duration.ofMinutes(10))
                     .build(CacheLoader.from { key: String? -> Image(key, 32.0, 32.0, true, true, true) })
 
     val addonCache: LoadingCache<Long, Optional<AddonJson>> =
