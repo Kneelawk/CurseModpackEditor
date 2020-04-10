@@ -1,12 +1,11 @@
 package com.kneelawk.modpackeditor.ui
 
-import com.kneelawk.modpackeditor.cache.ResourceCaches
-import com.kneelawk.modpackeditor.curse.AddonUtils
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.layout.Priority
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
@@ -14,7 +13,7 @@ import tornadofx.*
  * List fragment designed to show details about a mod in a modpack.
  */
 class ModpackFileListFragment : ListCellFragment<FileJson>() {
-    private val cache: ResourceCaches by inject()
+    private val elementUtils: ElementUtils by inject()
     private var imageLoader: ImageLoader? = null
     private var modNameLoader: LabelLoader? = null
     private var modAuthorLoader: LabelLoader? = null
@@ -24,7 +23,7 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
     override val root = hbox {
         spacing = 10.0
         imageview {
-            imageLoader = ImageLoader(this, itemProperty, { loadImage(it) }, { image = it })
+            imageLoader = ImageLoader(this, itemProperty, { elementUtils.loadImage(it) }, { image = it })
         }
         vbox {
             spacing = 10.0
@@ -37,11 +36,11 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                         fontWeight = FontWeight.BOLD
                         fontSize = 16.px
                     }
-                    modNameLoader = LabelLoader(this, itemProperty, { loadModName(it) }, { text = it })
+                    modNameLoader = LabelLoader(this, itemProperty, { elementUtils.loadModName(it) }, { text = it })
                 }
                 label("by")
                 label {
-                    modAuthorLoader = LabelLoader(this, itemProperty, { loadModAuthor(it) }, { text = it })
+                    modAuthorLoader = LabelLoader(this, itemProperty, { elementUtils.loadModAuthor(it) }, { text = it })
                 }
             }
             hbox {
@@ -49,34 +48,27 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                 alignment = Pos.BOTTOM_LEFT
                 label {
                     modFileDisplayLoader =
-                            LabelLoader(this, itemProperty, { loadModFileDisplay(it) }, { text = it })
+                            LabelLoader(this, itemProperty, { elementUtils.loadModFileDisplay(it) }, { text = it })
                 }
                 label("-")
                 label {
-                    modFileNameLoader = LabelLoader(this, itemProperty, { loadModFileName(it) }, { text = it })
+                    modFileNameLoader =
+                            LabelLoader(this, itemProperty, { elementUtils.loadModFileName(it) }, { text = it })
                 }
             }
         }
-    }
-
-    private fun loadImage(file: FileJson?): Image {
-        return cache.imageCache[AddonUtils.getIconUrl(file?.let { cache.addonCache[it.projectId].orNull() })]
-    }
-
-    private fun loadModName(file: FileJson?): String {
-        return file?.let { cache.addonCache[it.projectId].orNull()?.name } ?: "Unknown Addon"
-    }
-
-    private fun loadModAuthor(file: FileJson?): String {
-        return AddonUtils.getAuthorString(file?.let { cache.addonCache[it.projectId].orNull() })
-    }
-
-    private fun loadModFileDisplay(file: FileJson?): String {
-        return file?.let { cache.getAddonFile(it).orNull()?.displayName } ?: "Unknown"
-    }
-
-    private fun loadModFileName(file: FileJson?): String {
-        return file?.let { cache.getAddonFile(it).orNull()?.fileName } ?: "unknown"
+        region {
+            hgrow = Priority.ALWAYS
+        }
+        hbox {
+            alignment = Pos.CENTER
+            button("Remove") {
+                enableWhen(itemProperty.isNotNull)
+                action {
+                    fire(ModRemoveEvent(item, scope))
+                }
+            }
+        }
     }
 }
 
