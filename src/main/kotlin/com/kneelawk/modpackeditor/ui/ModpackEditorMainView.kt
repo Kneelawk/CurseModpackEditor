@@ -78,7 +78,7 @@ class ModpackEditorMainView : View("Modpack Editor") {
     }
 
     init {
-        titleProperty.bind(c.model.modpackName)
+        titleProperty.bind(c.modpackTitle)
     }
 
     override fun onBeforeShow() {

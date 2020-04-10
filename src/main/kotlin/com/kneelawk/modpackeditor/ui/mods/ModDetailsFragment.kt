@@ -1,6 +1,8 @@
 package com.kneelawk.modpackeditor.ui.mods
 
+import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
+import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -10,8 +12,11 @@ class ModDetailsFragment : Fragment() {
     val closeCallback: () -> Unit by param {}
 
     private val elementUtils: ElementUtils by inject()
+    private val mainController: ModpackEditorMainController by inject()
 
     private val webStylesheet = javaClass.getResource("/com/kneelawk/modpackeditor/web.css").toExternalForm()
+    private val modName = SimpleStringProperty("")
+    private val descriptionTitle = mainController.modpackTitle.stringBinding(modName) { "$it - ${modName.value}" }
 
     override val root = vbox {
         padding = insets(10.0)
@@ -32,7 +37,10 @@ class ModDetailsFragment : Fragment() {
                 }
                 runAsync {
                     val name = elementUtils.loadModName(projectId)
-                    runLater { text = name }
+                    runLater {
+                        modName.value = name
+                        text = name
+                    }
                 }
             }
             label("by")
@@ -59,6 +67,10 @@ class ModDetailsFragment : Fragment() {
             minWidth = 500.0
             minHeight = 400.0
         }
+    }
+
+    override fun onDock() {
+        titleProperty.bind(descriptionTitle)
     }
 
     override fun onUndock() {

@@ -18,6 +18,7 @@ class ModpackEditorMainController : Controller() {
     val model: ModpackModel by inject()
 
     val running = SimpleBooleanProperty(false)
+    val modpackTitle = model.modpackName.stringBinding(model.modpackVersion) { "$it - ${model.modpackVersion.value}" }
 
     private var previousDir: File = Path.of(model.modpackLocation.value).toAbsolutePath().parent.toFile()
 
