@@ -1,6 +1,10 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.data.manifest.FileJson
+import com.kneelawk.modpackeditor.ui.util.AsynchronousLoader
+import com.kneelawk.modpackeditor.ui.util.ElementUtils
+import com.kneelawk.modpackeditor.ui.util.ModRemoveEvent
+import com.kneelawk.modpackeditor.ui.util.ModRequiredEvent
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.image.Image
@@ -110,7 +114,9 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                     enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
                     action {
                         c.startEditing(item)
-                        fire(ModRequiredEvent(item, !item.required, scope))
+                        fire(
+                            ModRequiredEvent(item, !item.required,
+                                scope))
                     }
                 }
             }

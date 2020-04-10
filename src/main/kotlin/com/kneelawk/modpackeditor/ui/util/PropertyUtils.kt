@@ -1,4 +1,4 @@
-package com.kneelawk.modpackeditor.ui
+package com.kneelawk.modpackeditor.ui.util
 
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.value.ObservableValue

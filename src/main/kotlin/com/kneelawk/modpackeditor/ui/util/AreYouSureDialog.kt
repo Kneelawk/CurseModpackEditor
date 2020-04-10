@@ -1,4 +1,4 @@
-package com.kneelawk.modpackeditor.ui
+package com.kneelawk.modpackeditor.ui.util
 
 import javafx.scene.control.Button
 import javafx.scene.layout.Priority

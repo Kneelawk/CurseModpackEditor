@@ -1,6 +1,7 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.curse.ModpackFile
+import com.kneelawk.modpackeditor.ui.util.ErrorOpeningModpackDialog
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.FileChooser
 import tornadofx.Controller

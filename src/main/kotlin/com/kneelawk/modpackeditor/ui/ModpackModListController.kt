@@ -2,6 +2,7 @@ package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.data.AddonIdWrapper
 import com.kneelawk.modpackeditor.data.manifest.FileJson
+import com.kneelawk.modpackeditor.ui.util.*
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.SimpleSetProperty
 import javafx.beans.value.ObservableValue

@@ -1,4 +1,4 @@
-package com.kneelawk.modpackeditor.ui
+package com.kneelawk.modpackeditor.ui.util
 
 import javafx.scene.layout.Priority
 import javafx.scene.text.FontWeight

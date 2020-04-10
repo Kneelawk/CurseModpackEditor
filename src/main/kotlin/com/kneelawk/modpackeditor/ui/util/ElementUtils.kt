@@ -1,4 +1,4 @@
-package com.kneelawk.modpackeditor.ui
+package com.kneelawk.modpackeditor.ui.util
 
 import com.kneelawk.modpackeditor.cache.ResourceCaches
 import com.kneelawk.modpackeditor.curse.AddonUtils

@@ -5,6 +5,7 @@ import com.kneelawk.modpackeditor.data.manifest.FileJson
 import com.kneelawk.modpackeditor.data.manifest.ManifestJson
 import com.kneelawk.modpackeditor.data.manifest.MinecraftJson
 import com.kneelawk.modpackeditor.data.manifest.ModLoaderJson
+import com.kneelawk.modpackeditor.ui.util.CustomMessageDecorator
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.Commit
@@ -36,7 +37,9 @@ class ModpackModel(private var modpack: ModpackFile? = null,
 
     init {
         // I don't like how this ties the model to the UI
-        setDecorationProvider { CustomMessageDecorator(it.message, it.severity) }
+        setDecorationProvider {
+            CustomMessageDecorator(it.message, it.severity)
+        }
     }
 
     override fun onCommit(commits: List<Commit>) {

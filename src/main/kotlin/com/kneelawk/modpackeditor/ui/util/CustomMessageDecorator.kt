@@ -1,4 +1,4 @@
-package com.kneelawk.modpackeditor.ui
+package com.kneelawk.modpackeditor.ui.util
 
 import javafx.scene.Node
 import javafx.scene.control.Control

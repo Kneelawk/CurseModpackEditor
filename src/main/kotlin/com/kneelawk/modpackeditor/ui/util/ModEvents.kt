@@ -1,4 +1,4 @@
-package com.kneelawk.modpackeditor.ui
+package com.kneelawk.modpackeditor.ui.util
 
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import tornadofx.FXEvent
