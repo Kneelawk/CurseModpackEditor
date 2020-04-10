@@ -376,3 +376,20 @@
     -fx-background-color: -obsidian-focus-color, -obsidian-background2-color;
     -fx-background-insets: 0, 1;
 }
+
+/* TornadoFX Internal Window */
+
+.window {
+    -fx-background-color: -obsidian-background1-color;
+    -fx-background-insets: 0;
+}
+
+.window .top {
+    -fx-background-color: -obsidian-background1-color;
+    -fx-background-insets: 0;
+}
+
+.window .floating-window-content {
+    -fx-background-color: -obsidian-background1-color;
+    -fx-background-insets: 0;
+}

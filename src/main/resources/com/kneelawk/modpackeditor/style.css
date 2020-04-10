@@ -10,6 +10,14 @@
     -fx-border-color: firebrick;
 }
 
+.label:mod-enabled {
+    -fx-text-fill: #00bb03;
+}
+
+.label:mod-disabled {
+    -fx-text-fill: firebrick;
+}
+
 .progress-bar:done {
     -fx-accent: #00bb03;
 }

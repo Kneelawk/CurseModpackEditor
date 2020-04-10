@@ -13,6 +13,7 @@ import tornadofx.*
  * List fragment designed to show details about a mod in a modpack.
  */
 class ModpackFileListFragment : ListCellFragment<FileJson>() {
+    private val c: ModpackModListController by inject()
     private val elementUtils: ElementUtils by inject()
     private var imageLoader: ImageLoader? = null
     private var modNameLoader: LabelLoader? = null
@@ -64,13 +65,52 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                                 { elementUtils.loadModFileName(it) }, { text = it })
                 }
             }
-            checkbox("Required") {
-                item?.let { isSelected = it.required }
-                itemProperty.onChange { it?.let { isSelected = it.required } }
-                action {
-                    val required = isSelected
-                    if (required != item.required) {
-                        fire(ModRequiredEvent(item, isSelected, scope))
+            hbox {
+                spacing = 10.0
+                alignment = Pos.CENTER_LEFT
+                label(itemProperty.stringBinding {
+                    when (it?.required) {
+                        true -> {
+                            "Status: Enabled"
+                        }
+                        false -> {
+                            "Status: Disabled"
+                        }
+                        else -> {
+                            "Status: Unknown"
+                        }
+                    }
+                }) {
+                    itemProperty.onChange {
+                        if (it?.required == true) {
+                            addPseudoClass("mod-enabled")
+                        } else {
+                            removePseudoClass("mod-enabled")
+                        }
+                        if (it?.required == false) {
+                            addPseudoClass("mod-disabled")
+                        } else {
+                            removePseudoClass("mod-disabled")
+                        }
+                    }
+                }
+                button(itemProperty.stringBinding {
+                    when (it?.required) {
+                        true -> {
+                            "Disable"
+                        }
+                        false -> {
+                            "Enable"
+                        }
+                        else -> {
+                            "Unknown"
+                        }
+                    }
+                }) {
+                    enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
+                    action {
+                        c.startEditing(item)
+                        fire(ModRequiredEvent(item, !item.required, scope))
                     }
                 }
             }
@@ -81,8 +121,9 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
         hbox {
             alignment = Pos.CENTER
             button("Remove") {
-                enableWhen(itemProperty.isNotNull)
+                enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
                 action {
+                    c.startEditing(item)
                     fire(ModRemoveEvent(item, scope))
                 }
             }

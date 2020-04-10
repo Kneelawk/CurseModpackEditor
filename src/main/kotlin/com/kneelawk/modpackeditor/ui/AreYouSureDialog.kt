@@ -11,6 +11,7 @@ import tornadofx.*
 class AreYouSureDialog : Fragment("Are You Sure?") {
     val prompt: String by param("Are You Sure?")
     val callback: (Result) -> Unit by param { _ -> }
+    val closeCallback: () -> Unit by param {}
 
     var confirmButton: Button? = null
 
@@ -47,6 +48,10 @@ class AreYouSureDialog : Fragment("Are You Sure?") {
 
     override fun onDock() {
         confirmButton!!.requestFocus()
+    }
+
+    override fun onUndock() {
+        closeCallback()
     }
 
     sealed class Result {
