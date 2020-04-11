@@ -56,6 +56,10 @@ class ModListState : Controller() {
         return model.modpackMods.containsWhereProperty(projectId) { file, id -> file.projectId == id }
     }
 
+    fun modFileInstalledProperty(addonId: AddonId): BooleanBinding {
+        return model.modpackMods.containsWhereProperty { it.projectId == addonId.projectId && it.fileId == addonId.fileId }
+    }
+
     fun modFileInstalledProperty(addonId: ObservableValue<out AddonId?>): BooleanBinding {
         return model.modpackMods.containsWhereProperty(addonId) { file, id ->
             file.projectId == id?.projectId && file.fileId == id.fileId

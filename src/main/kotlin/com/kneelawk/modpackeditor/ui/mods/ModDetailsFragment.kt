@@ -63,10 +63,10 @@ class ModDetailsFragment : Fragment() {
             }
             button("Files") {
                 action {
-                    find<ModVersionSelectFragment>(mapOf<KProperty1<ModVersionSelectFragment, Any>, Any>(
-                        ModVersionSelectFragment::dialogType to ModVersionSelectFragment.Type.INSTALL,
-                        ModVersionSelectFragment::projectId to projectId,
-                        ModVersionSelectFragment::selectCallback to { newAddon: AddonId ->
+                    find<ModVersionListFragment>(mapOf<KProperty1<ModVersionListFragment, Any>, Any>(
+                        ModVersionListFragment::dialogType to ModVersionListFragment.Type.INSTALL,
+                        ModVersionListFragment::projectId to projectId,
+                        ModVersionListFragment::selectCallback to { newAddon: AddonId ->
                             changeVersionCallback(newAddon)
                         }
                     )).openModal(modality = Modality.NONE, owner = currentWindow)

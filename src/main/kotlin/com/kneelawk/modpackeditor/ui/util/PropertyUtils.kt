@@ -41,6 +41,10 @@ fun <E> ObservableList<E>.containsProperty(valueProperty: ObservableValue<E>): B
     return CustomBindings.contains(this, valueProperty)
 }
 
+fun <E> ObservableList<E>.containsWhereProperty(finder: (E) -> Boolean): BooleanBinding {
+    return CustomBindings.containsWhere(this, finder)
+}
+
 fun <E, C> ObservableList<E>.containsWhereProperty(comparisonProperty: ObservableValue<C>,
                                                    finder: (E, C?) -> Boolean): BooleanBinding {
     return CustomBindings.containsWhere(this, comparisonProperty, finder)
@@ -59,6 +63,28 @@ object CustomBindings {
 
             override fun computeValue(): Boolean {
                 return op.contains(value)
+            }
+
+            override fun getDependencies(): ObservableList<*> {
+                return FXCollections.singletonObservableList(op)
+            }
+        }
+    }
+
+    fun <E, L> containsWhere(op: L, finder: (E) -> Boolean): BooleanBinding
+            where L : Collection<E>,
+                  L : Observable {
+        return object : BooleanBinding() {
+            init {
+                super.bind(op)
+            }
+
+            override fun dispose() {
+                super.unbind(op)
+            }
+
+            override fun computeValue(): Boolean {
+                return op.find(finder) != null
             }
 
             override fun getDependencies(): ObservableList<*> {

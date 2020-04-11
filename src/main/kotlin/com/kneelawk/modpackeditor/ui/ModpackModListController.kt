@@ -4,7 +4,7 @@ import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import com.kneelawk.modpackeditor.ui.mods.ModDetailsFragment
 import com.kneelawk.modpackeditor.ui.mods.ModFileDetailsFragment
-import com.kneelawk.modpackeditor.ui.mods.ModVersionSelectFragment
+import com.kneelawk.modpackeditor.ui.mods.ModVersionListFragment
 import com.kneelawk.modpackeditor.ui.util.*
 import javafx.stage.Modality
 import tornadofx.Controller
@@ -55,15 +55,15 @@ class ModpackModListController : Controller() {
 
     private fun changeModVersion(addonId: FileJson) {
         var currentAddon: AddonId = addonId
-        find<ModVersionSelectFragment>(mapOf<KProperty1<ModVersionSelectFragment, Any>, Any>(
-            ModVersionSelectFragment::dialogType to ModVersionSelectFragment.Type.INSTALL,
-            ModVersionSelectFragment::projectId to addonId.projectId,
-            ModVersionSelectFragment::selectCallback to { newAddon: AddonId ->
+        find<ModVersionListFragment>(mapOf<KProperty1<ModVersionListFragment, Any>, Any>(
+            ModVersionListFragment::dialogType to ModVersionListFragment.Type.INSTALL,
+            ModVersionListFragment::projectId to addonId.projectId,
+            ModVersionListFragment::selectCallback to { newAddon: AddonId ->
                 modListState.replaceEditing(currentAddon, newAddon)
                 modListState.replaceAddon(currentAddon, newAddon.toFileJson(addonId.required))
                 currentAddon = newAddon
             },
-            ModVersionSelectFragment::closeCallback to {
+            ModVersionListFragment::closeCallback to {
                 modListState.finishEditing(currentAddon)
             }
         )).openModal(modality = Modality.NONE)

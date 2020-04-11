@@ -3,12 +3,13 @@ package com.kneelawk.modpackeditor.ui.mods
 import com.kneelawk.modpackeditor.curse.CurseApi
 import com.kneelawk.modpackeditor.data.AddonFile
 import com.kneelawk.modpackeditor.data.AddonId
+import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
 import com.kneelawk.modpackeditor.ui.SelectMinecraftVersionFragment
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
 import com.kneelawk.modpackeditor.ui.util.ModListState
-import javafx.beans.property.SimpleLongProperty
+import javafx.beans.binding.Binding
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ObservableLongValue
@@ -23,7 +24,7 @@ import tornadofx.*
 /**
  * Created by Kneelawk on 4/10/20.
  */
-class ModVersionSelectFragment : Fragment() {
+class ModVersionListFragment : Fragment() {
     val dialogType: Type by param()
     val projectId: Long by param()
     val selectedFileId: ObservableLongValue by param()
@@ -39,11 +40,25 @@ class ModVersionSelectFragment : Fragment() {
     private val descriptionTitle =
             mainController.modpackTitle.stringBinding(modName) { "$it - ${modName.value} - Files" }
 
-    private val listView = listview<ModVersionSelectListElement> {
-        when (dialogType) {
-            Type.INSTALL -> cellFragment(ModVersionInstallListFragment::class)
-            Type.SELECT -> cellFragment(ModVersionSelectListFragment::class)
+    private val listView = tableview<ModVersionListElement> {
+        readonlyColumn("File", ModVersionListElement::addonFile) {
+            minWidth(600.0)
+            prefWidth(600.0)
+            cellFragment(ModVersionListFileFragment::class)
         }
+        readonlyColumn("Game Version", ModVersionListElement::addonFile) {
+            minWidth(200.0)
+            prefWidth(200.0)
+            cellFragment(ModVersionListGameVersionFragment::class)
+        }
+        column("Select", ModVersionListElement::info) {
+            minWidth(200.0)
+            prefWidth(200.0)
+            cellFragment(ModVersionListSelectFragment::class)
+        }
+
+        columnResizePolicy = SmartResize.POLICY
+
         asyncItems { loadModList() }
 
         hgrow = Priority.ALWAYS
@@ -107,7 +122,7 @@ class ModVersionSelectFragment : Fragment() {
         add(listView)
     }
 
-    private fun loadModList(): List<ModVersionSelectListElement> {
+    private fun loadModList(): List<ModVersionListElement> {
         val files = curseApi.getAddonFiles(projectId).orEmpty().sortedByDescending { it.fileDate }
         return if (modListState.filterMinecraftVersion.value) {
             files.filter { file ->
@@ -119,7 +134,15 @@ class ModVersionSelectFragment : Fragment() {
             }
         } else {
             files
-        }.map { ModVersionSelectListElement(AddonFile(projectId, it), this) }
+        }.map { file ->
+            val addonId = SimpleAddonId(projectId, file.id)
+            ModVersionListElement(AddonFile(projectId, file), when (dialogType) {
+                Type.INSTALL -> modListState.modFileInstalledProperty(addonId)
+                        .objectBinding { ModVersionListSelectInfo(this, addonId, dialogType, it!!) }
+                Type.SELECT -> selectedFileId.booleanBinding { it == file.id }
+                        .objectBinding { ModVersionListSelectInfo(this, addonId, dialogType, it!!) }
+            })
+        }
     }
 
     private fun selectLowMinecraftVersion() {
@@ -192,16 +215,11 @@ class ModVersionSelectFragment : Fragment() {
 
     fun selectItem(addonId: AddonId) {
         selectCallback(addonId)
-//        if (dialogType == Type.INSTALL) {
-//            close()
-//        }
     }
 
     enum class Type {
         /**
          * This dialog type is where selected state depends on the mods installed in the modpack.
-         *
-         * Note: When the dialog is in INSTALL mode, clicking the install button closes the window.
          */
         INSTALL,
 
@@ -213,106 +231,83 @@ class ModVersionSelectFragment : Fragment() {
 }
 
 /**
- * Wrapper class to pass all the necessary information to the ListCellFragments.
+ * Wrapper class to pass all the necessary information to the TableCellFragments.
  */
-data class ModVersionSelectListElement(val addonFile: AddonFile, val fragment: ModVersionSelectFragment)
+data class ModVersionListElement(val addonFile: AddonFile, val info: Binding<ModVersionListSelectInfo?>)
 
 /**
- * ListCellFragment for the INSTALL mode of the mod version select dialog.
+ * Wrapper providing information specifically for the selection table cell fragment.
  */
-class ModVersionInstallListFragment : ListCellFragment<ModVersionSelectListElement>() {
-    private val modListState: ModListState by inject()
+data class ModVersionListSelectInfo(val fragment: ModVersionListFragment, val addonId: AddonId,
+                                    val dialogType: ModVersionListFragment.Type, val selected: Boolean)
 
-    private val addonIdProperty = itemProperty.objectBinding { it?.addonFile }
-    private val installedProperty = modListState.modFileInstalledProperty(addonIdProperty)
+/**
+ * Table cell fragment for displaying file details like display name and file name.
+ */
+class ModVersionListFileFragment : TableCellFragment<ModVersionListElement, AddonFile>() {
+    override val root = hbox {
+        padding = insets(5.0)
+        spacing = 10.0
+        alignment = Pos.CENTER_LEFT
 
+        label(itemProperty.stringBinding { it?.fileData?.displayName })
+        label("-")
+        label(itemProperty.stringBinding { it?.fileData?.fileName })
+    }
+}
+
+/**
+ * Table cell fragment for displaying a file's game versions.
+ */
+class ModVersionListGameVersionFragment : TableCellFragment<ModVersionListElement, AddonFile>() {
     override val root = hbox {
         padding = insets(5.0)
         spacing = 10.0
         alignment = Pos.CENTER
 
-        label(itemProperty.stringBinding { it?.addonFile?.fileData?.displayName })
-        label("-")
-        label(itemProperty.stringBinding { it?.addonFile?.fileData?.fileName })
-        label("for")
-        label(itemProperty.stringBinding { it?.addonFile?.fileData?.gameVersion?.firstOrNull() ?: "?" })
+        label(itemProperty.stringBinding { it?.fileData?.gameVersion?.firstOrNull() ?: "?" })
         button("+") {
             enableWhen(itemProperty.booleanBinding { file ->
-                file?.addonFile?.fileData?.gameVersion?.size?.let { it > 1 } ?: false
+                file?.fileData?.gameVersion?.size?.let { it > 1 } ?: false
             })
             action {
                 val loc = localToScreen(boundsInLocal)
-                val tooltip = Tooltip(item.addonFile.fileData.gameVersion.joinToString(",\n"))
+                val tooltip = Tooltip(item.fileData.gameVersion.joinToString(",\n"))
                 tooltip.isAutoHide = true
                 tooltip.hideDelay = Duration.seconds(5.0)
                 tooltip.show(this, loc.minX, loc.maxY)
-            }
-        }
-
-        region {
-            hgrow = Priority.ALWAYS
-        }
-
-        button("Details") {
-            enableWhen(itemProperty.isNotNull)
-            action {
-                item?.fragment?.showDetails(item.addonFile)
-            }
-        }
-        button(installedProperty.stringBinding { if (it == true) "Installed" else "Install" }) {
-            enableWhen(itemProperty.isNotNull.and(installedProperty.not()))
-            action {
-                item?.fragment?.selectItem(item.addonFile)
             }
         }
     }
 }
 
 /**
- * ListCellFragment for the SELECT mode of the mod version select dialog.
+ * Table cell fragment for displaying the file selection and details buttons.
  */
-class ModVersionSelectListFragment : ListCellFragment<ModVersionSelectListElement>() {
-    private val addonIdProperty = itemProperty.objectBinding { it?.addonFile }
-    private val selectedItem = itemProperty.select { it?.fragment?.selectedFileId ?: SimpleLongProperty(0) }
-    private val selectedProperty = addonIdProperty.booleanBinding(selectedItem) { it?.fileId == selectedItem.value }
+class ModVersionListSelectFragment : TableCellFragment<ModVersionListElement, ModVersionListSelectInfo?>() {
+    private val notSelected = itemProperty.booleanBinding { it?.selected ?: true }.not()
 
     override val root = hbox {
         padding = insets(5.0)
         spacing = 10.0
         alignment = Pos.CENTER
 
-        label(itemProperty.stringBinding { it?.addonFile?.fileData?.displayName })
-        label("-")
-        label(itemProperty.stringBinding { it?.addonFile?.fileData?.fileName })
-        label("for")
-        label(itemProperty.stringBinding { it?.addonFile?.fileData?.gameVersion?.firstOrNull() ?: "?" })
-        button("+") {
-            enableWhen(itemProperty.booleanBinding { file ->
-                file?.addonFile?.fileData?.gameVersion?.size?.let { it > 1 } ?: false
-            })
-            action {
-                val loc = localToScreen(boundsInLocal)
-                val tooltip = Tooltip(item.addonFile.fileData.gameVersion.joinToString(",\n"))
-                tooltip.isAutoHide = true
-                tooltip.hideDelay = Duration.seconds(5.0)
-                tooltip.show(this, loc.minX, loc.maxY)
-            }
-        }
-
-        region {
-            hgrow = Priority.ALWAYS
-        }
-
         button("Details") {
             enableWhen(itemProperty.isNotNull)
             action {
-                item?.fragment?.showDetails(item.addonFile)
+                item?.fragment?.showDetails(item!!.addonId)
             }
         }
-        button(selectedProperty.stringBinding { if (it == true) "Selected" else "Select" }) {
-            enableWhen(itemProperty.isNotNull.and(selectedProperty.not()))
+        button(itemProperty.stringBinding(notSelected) {
+            when (it?.dialogType) {
+                ModVersionListFragment.Type.INSTALL -> if (notSelected.value == true) "Install" else "Installed"
+                ModVersionListFragment.Type.SELECT -> if (notSelected.value == true) "Select" else "Selected"
+                null -> ""
+            }
+        }) {
+            enableWhen(itemProperty.isNotNull.and(notSelected))
             action {
-                item?.fragment?.selectItem(item.addonFile)
+                item?.fragment?.selectItem(item!!.addonId)
             }
         }
     }
