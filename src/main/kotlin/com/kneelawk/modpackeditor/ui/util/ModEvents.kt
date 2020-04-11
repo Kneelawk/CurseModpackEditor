@@ -5,6 +5,11 @@ import tornadofx.FXEvent
 import tornadofx.Scope
 
 /**
+ * Event fired when a mod list item's change version button is clicked.
+ */
+class ModChangeVersionEvent(val addonId: FileJson, scope: Scope) : FXEvent(scope = scope)
+
+/**
  * Event fired when a mod list item's remove button is clicked.
  */
 class ModRemoveEvent(val addonId: FileJson, scope: Scope) : FXEvent(scope = scope)
@@ -22,4 +27,4 @@ class ModDetailsEvent(val addonId: FileJson, scope: Scope) : FXEvent(scope = sco
 /**
  * Event fired when a mod list item's changelog button is clicked.
  */
-class ModChangelogEvent(val addonId: FileJson, scope: Scope) : FXEvent(scope = scope)
+class ModFileDetailsEvent(val addonId: FileJson, scope: Scope) : FXEvent(scope = scope)

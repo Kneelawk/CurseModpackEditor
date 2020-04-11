@@ -1,18 +1,13 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.data.AddonId
-import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import com.kneelawk.modpackeditor.ui.mods.ModDetailsFragment
-import com.kneelawk.modpackeditor.ui.mods.ModFileChangelogFragment
+import com.kneelawk.modpackeditor.ui.mods.ModFileDetailsFragment
+import com.kneelawk.modpackeditor.ui.mods.ModVersionSelectFragment
 import com.kneelawk.modpackeditor.ui.util.*
-import javafx.beans.binding.BooleanBinding
-import javafx.beans.property.SimpleSetProperty
-import javafx.beans.value.ObservableValue
-import javafx.collections.FXCollections
 import javafx.stage.Modality
 import tornadofx.Controller
-import tornadofx.objectBinding
 import kotlin.reflect.KProperty1
 
 /**
@@ -20,9 +15,8 @@ import kotlin.reflect.KProperty1
  */
 class ModpackModListController : Controller() {
     private val elementUtils: ElementUtils by inject()
+    private val modListState: ModListState by inject()
     val model: ModpackModel by inject()
-
-    private val editingMods = SimpleSetProperty<SimpleAddonId>(FXCollections.observableSet())
 
     init {
         subscribe<ModRemoveEvent> {
@@ -34,21 +28,12 @@ class ModpackModListController : Controller() {
         subscribe<ModDetailsEvent> {
             showModDetails(it.addonId)
         }
-        subscribe<ModChangelogEvent> {
-            showModChangelog(it.addonId)
+        subscribe<ModFileDetailsEvent> {
+            showModFileDetails(it.addonId)
         }
-    }
-
-    fun startEditing(addonId: FileJson) {
-        editingMods.add(SimpleAddonId(addonId))
-    }
-
-    fun finishEditing(addonId: FileJson) {
-        editingMods.remove(SimpleAddonId(addonId))
-    }
-
-    fun notEditingProperty(property: ObservableValue<out AddonId>): BooleanBinding {
-        return editingMods.containsProperty(property.objectBinding { it?.let { SimpleAddonId(it) } }).not()
+        subscribe<ModChangeVersionEvent> {
+            changeModVersion(it.addonId)
+        }
     }
 
     private fun removeMod(addonId: FileJson) {
@@ -62,37 +47,53 @@ class ModpackModListController : Controller() {
                     }
                 },
                 AreYouSureDialog::closeCallback to {
-                    finishEditing(addonId)
+                    modListState.finishEditing(addonId)
                 }
             ))
         )
     }
 
-    private fun changeModRequired(addonId: FileJson, required: Boolean) {
-        model.modpackMods.replaceAll {
-            if (it == addonId) {
-                FileJson(addonId.projectId, addonId.fileId, required)
-            } else {
-                it
-            }
-        }
-        finishEditing(addonId)
-    }
-
-    private fun showModDetails(addonId: FileJson) {
-        find<ModDetailsFragment>(mapOf<KProperty1<ModDetailsFragment, Any>, Any>(
-            ModDetailsFragment::projectId to addonId.projectId,
-            ModDetailsFragment::closeCallback to {
-                finishEditing(addonId)
+    private fun changeModVersion(addonId: FileJson) {
+        var currentAddon: AddonId = addonId
+        find<ModVersionSelectFragment>(mapOf<KProperty1<ModVersionSelectFragment, Any>, Any>(
+            ModVersionSelectFragment::dialogType to ModVersionSelectFragment.Type.INSTALL,
+            ModVersionSelectFragment::projectId to addonId.projectId,
+            ModVersionSelectFragment::selectCallback to { newAddon: AddonId ->
+                modListState.replaceEditing(currentAddon, newAddon)
+                modListState.replaceAddon(currentAddon, newAddon.toFileJson(addonId.required))
+                currentAddon = newAddon
+            },
+            ModVersionSelectFragment::closeCallback to {
+                modListState.finishEditing(currentAddon)
             }
         )).openModal(modality = Modality.NONE)
     }
 
-    private fun showModChangelog(addonId: FileJson) {
-        find<ModFileChangelogFragment>(mapOf<KProperty1<ModFileChangelogFragment, Any>, Any>(
-            ModFileChangelogFragment::addonId to addonId,
-            ModFileChangelogFragment::closeCallback to {
-                finishEditing(addonId)
+    private fun changeModRequired(addonId: FileJson, required: Boolean) {
+        modListState.replaceAddon(addonId, addonId.toFileJson(required))
+        modListState.finishEditing(addonId)
+    }
+
+    private fun showModDetails(addonId: FileJson) {
+        var currentAddon: AddonId = addonId
+        find<ModDetailsFragment>(mapOf<KProperty1<ModDetailsFragment, Any>, Any>(
+            ModDetailsFragment::projectId to addonId.projectId,
+            ModDetailsFragment::changeVersionCallback to { newAddon: AddonId ->
+                modListState.replaceEditing(currentAddon, newAddon)
+                modListState.replaceAddon(currentAddon, newAddon.toFileJson(addonId.required))
+                currentAddon = newAddon
+            },
+            ModDetailsFragment::closeCallback to {
+                modListState.finishEditing(currentAddon)
+            }
+        )).openModal(modality = Modality.NONE)
+    }
+
+    private fun showModFileDetails(addonId: FileJson) {
+        find<ModFileDetailsFragment>(mapOf<KProperty1<ModFileDetailsFragment, Any>, Any>(
+            ModFileDetailsFragment::addonId to addonId,
+            ModFileDetailsFragment::closeCallback to {
+                modListState.finishEditing(addonId)
             }
         )).openModal(modality = Modality.NONE)
     }

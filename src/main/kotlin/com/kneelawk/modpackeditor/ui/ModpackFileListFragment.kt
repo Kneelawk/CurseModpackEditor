@@ -14,13 +14,15 @@ import tornadofx.*
  * List fragment designed to show details about a mod in a modpack.
  */
 class ModpackFileListFragment : ListCellFragment<FileJson>() {
-    private val c: ModpackModListController by inject()
+    private val modListState: ModListState by inject()
     private val elementUtils: ElementUtils by inject()
     private var imageLoader: ImageLoader? = null
     private var modNameLoader: LabelLoader? = null
     private var modAuthorLoader: LabelLoader? = null
     private var modFileDisplayLoader: LabelLoader? = null
     private var modFileNameLoader: LabelLoader? = null
+
+    private val notEditingProperty = modListState.notEditingProperty(itemProperty)
 
     override val root = hbox {
         padding = insets(5.0)
@@ -108,9 +110,9 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                         }
                     }
                 }) {
-                    enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
+                    enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        c.startEditing(item)
+                        modListState.startEditing(item)
                         fire(
                             ModRequiredEvent(item, !item.required,
                                 scope))
@@ -121,32 +123,44 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
         region {
             hgrow = Priority.ALWAYS
         }
-        hbox {
+        gridpane {
             alignment = Pos.CENTER
-            vbox {
-                alignment = Pos.CENTER
+            hgap = 5.0
+            vgap = 5.0
+            row {
                 button("Details") {
                     maxWidth = Double.MAX_VALUE
-                    enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
+                    enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        c.startEditing(item)
+                        modListState.startEditing(item)
                         fire(ModDetailsEvent(item, scope))
                     }
                 }
-                button("Changelog") {
+                button("Remove") {
                     maxWidth = Double.MAX_VALUE
-                    enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
+                    enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        c.startEditing(item)
-                        fire(ModChangelogEvent(item, scope))
+                        modListState.startEditing(item)
+                        fire(ModRemoveEvent(item, scope))
                     }
                 }
             }
-            button("Remove") {
-                enableWhen(itemProperty.isNotNull.and(c.notEditingProperty(itemProperty)))
-                action {
-                    c.startEditing(item)
-                    fire(ModRemoveEvent(item, scope))
+            row {
+                button("File Details") {
+                    maxWidth = Double.MAX_VALUE
+                    enableWhen(itemProperty.isNotNull.and(notEditingProperty))
+                    action {
+                        modListState.startEditing(item)
+                        fire(ModFileDetailsEvent(item, scope))
+                    }
+                }
+                button("Change Version") {
+                    maxWidth = Double.MAX_VALUE
+                    enableWhen(itemProperty.isNotNull.and(notEditingProperty))
+                    action {
+                        modListState.startEditing(item)
+                        fire(ModChangeVersionEvent(item, scope))
+                    }
                 }
             }
         }

@@ -70,8 +70,13 @@ class CurseApi : Controller() {
     /**
      * Gets a list of addon files for the given project id.
      */
-    fun getAddonFiles(projectId: Long): List<AddonFileJson> {
-        return rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/$projectId/files").list().toModel()
+    fun getAddonFiles(projectId: Long): List<AddonFileJson>? {
+        val response = rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/$projectId/files")
+        return if (response.status == Rest.Response.Status.OK) {
+            response.list().toModel()
+        } else {
+            null
+        }
     }
 
     /**
@@ -81,7 +86,7 @@ class CurseApi : Controller() {
         var newest: AddonFileJson? = null
         var newestDate: LocalDateTime? = null
 
-        getAddonFiles(projectId).forEach { file ->
+        getAddonFiles(projectId)?.forEach { file ->
             if (file.gameVersion.contains(minecraftVersion) && (newestDate == null || file.fileDate.isAfter(
                         newestDate))) {
                 newest = file

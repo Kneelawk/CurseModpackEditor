@@ -12,6 +12,10 @@ import tornadofx.Controller
 class ElementUtils : Controller() {
     private val cache: ResourceCaches by inject()
 
+    fun loadSmallImage(projectId: Long?): Image {
+        return cache.smallImageCache[AddonUtils.getIconUrl(projectId?.let { cache.addonCache[it].orNull() })]
+    }
+
     fun loadImage(projectId: Long?): Image {
         return cache.imageCache[AddonUtils.getIconUrl(projectId?.let { cache.addonCache[it].orNull() })]
     }
@@ -68,6 +72,10 @@ class ElementUtils : Controller() {
 
     fun loadModFileDisplay(file: AddonId?): String {
         return file?.let { cache.getAddonFile(it).orNull()?.displayName } ?: "Unknown"
+    }
+
+    fun loadModFileGameVersions(file: AddonId?): List<String> {
+        return file?.let { cache.getAddonFile(it).orNull()?.gameVersion } ?: listOf("Unknown")
     }
 
     fun loadModFileName(file: AddonId?): String {

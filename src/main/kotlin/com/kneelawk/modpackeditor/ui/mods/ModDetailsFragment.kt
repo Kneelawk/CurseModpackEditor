@@ -1,17 +1,22 @@
 package com.kneelawk.modpackeditor.ui.mods
 
+import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
+import javafx.scene.layout.Priority
 import javafx.scene.text.FontWeight
+import javafx.stage.Modality
 import tornadofx.*
+import kotlin.reflect.KProperty1
 
 /**
  * Fragment that shows a mod's description.
  */
 class ModDetailsFragment : Fragment() {
     val projectId: Long by param()
+    val changeVersionCallback: (AddonId) -> Unit by param { _ -> }
     val closeCallback: () -> Unit by param {}
 
     private val elementUtils: ElementUtils by inject()
@@ -51,6 +56,20 @@ class ModDetailsFragment : Fragment() {
                 runAsync {
                     val author = elementUtils.loadModAuthor(projectId)
                     runLater { text = author }
+                }
+            }
+            region {
+                hgrow = Priority.ALWAYS
+            }
+            button("Files") {
+                action {
+                    find<ModVersionSelectFragment>(mapOf<KProperty1<ModVersionSelectFragment, Any>, Any>(
+                        ModVersionSelectFragment::dialogType to ModVersionSelectFragment.Type.INSTALL,
+                        ModVersionSelectFragment::projectId to projectId,
+                        ModVersionSelectFragment::selectCallback to { newAddon: AddonId ->
+                            changeVersionCallback(newAddon)
+                        }
+                    )).openModal(modality = Modality.NONE, owner = currentWindow)
                 }
             }
         }
