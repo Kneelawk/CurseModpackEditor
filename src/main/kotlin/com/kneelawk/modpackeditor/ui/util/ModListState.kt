@@ -3,8 +3,11 @@ package com.kneelawk.modpackeditor.ui.util
 import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.manifest.FileJson
+import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.ModpackModel
 import javafx.beans.binding.BooleanBinding
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleSetProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
@@ -17,6 +20,10 @@ import tornadofx.objectBinding
 class ModListState : Controller() {
     private val model: ModpackModel by inject()
     private val editingMods = SimpleSetProperty<SimpleAddonId>(FXCollections.observableSet())
+
+    val filterMinecraftVersion = SimpleBooleanProperty(true)
+    val lowMinecraftVersion = SimpleObjectProperty(MinecraftVersion.parse(model.minecraftVersion.value))
+    val highMinecraftVersion = SimpleObjectProperty(MinecraftVersion.parse(model.minecraftVersion.value))
 
     fun startEditing(addonId: AddonId) {
         editingMods.add(SimpleAddonId(addonId))

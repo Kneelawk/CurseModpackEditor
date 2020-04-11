@@ -3,7 +3,9 @@ package com.kneelawk.modpackeditor.ui.mods
 import com.kneelawk.modpackeditor.curse.CurseApi
 import com.kneelawk.modpackeditor.data.AddonFile
 import com.kneelawk.modpackeditor.data.AddonId
+import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
+import com.kneelawk.modpackeditor.ui.SelectMinecraftVersionFragment
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
 import com.kneelawk.modpackeditor.ui.util.ModListState
 import javafx.beans.property.SimpleLongProperty
@@ -37,6 +39,19 @@ class ModVersionSelectFragment : Fragment() {
     private val descriptionTitle =
             mainController.modpackTitle.stringBinding(modName) { "$it - ${modName.value} - Files" }
 
+    private val listView = listview<ModVersionSelectListElement> {
+        when (dialogType) {
+            Type.INSTALL -> cellFragment(ModVersionInstallListFragment::class)
+            Type.SELECT -> cellFragment(ModVersionSelectListFragment::class)
+        }
+        asyncItems { loadModList() }
+
+        hgrow = Priority.ALWAYS
+        vgrow = Priority.ALWAYS
+        maxWidth = Double.MAX_VALUE
+        maxHeight = Double.MAX_VALUE
+    }
+
     override val root = vbox {
         padding = insets(10.0)
         spacing = 10.0
@@ -64,23 +79,81 @@ class ModVersionSelectFragment : Fragment() {
             }
             label("Files")
         }
-        listview<ModVersionSelectListElement> {
-            when (dialogType) {
-                Type.INSTALL -> cellFragment(ModVersionInstallListFragment::class)
-                Type.SELECT -> cellFragment(ModVersionSelectListFragment::class)
+        hbox {
+            spacing = 10.0
+            alignment = Pos.CENTER_LEFT
+            checkbox("Filter minecraft version from", modListState.filterMinecraftVersion)
+            button(modListState.lowMinecraftVersion.stringBinding { it.toString() }) {
+                enableWhen(modListState.filterMinecraftVersion)
+                action {
+                    selectLowMinecraftVersion()
+                }
             }
-            asyncItems { loadModList() }
-
-            hgrow = Priority.ALWAYS
-            vgrow = Priority.ALWAYS
-            maxWidth = Double.MAX_VALUE
-            maxHeight = Double.MAX_VALUE
+            label("to") {
+                enableWhen(modListState.filterMinecraftVersion)
+            }
+            button(modListState.highMinecraftVersion.stringBinding { it.toString() }) {
+                enableWhen(modListState.filterMinecraftVersion)
+                action {
+                    selectHighMinecraftVersion()
+                }
+            }
+            button("Reload") {
+                action {
+                    listView.asyncItems { loadModList() }
+                }
+            }
         }
+        add(listView)
     }
 
     private fun loadModList(): List<ModVersionSelectListElement> {
-        return curseApi.getAddonFiles(projectId).orEmpty().sortedByDescending { it.fileDate }
-                .map { ModVersionSelectListElement(AddonFile(projectId, it), this) }
+        val files = curseApi.getAddonFiles(projectId).orEmpty().sortedByDescending { it.fileDate }
+        return if (modListState.filterMinecraftVersion.value) {
+            files.filter { file ->
+                file.gameVersion.find { version ->
+                    MinecraftVersion.tryParse(version)?.let {
+                        it >= modListState.lowMinecraftVersion.value && it <= modListState.highMinecraftVersion.value
+                    } ?: false
+                } != null
+            }
+        } else {
+            files
+        }.map { ModVersionSelectListElement(AddonFile(projectId, it), this) }
+    }
+
+    private fun selectLowMinecraftVersion() {
+        find<SelectMinecraftVersionFragment>(mapOf(
+            SelectMinecraftVersionFragment::callback to { result: SelectMinecraftVersionFragment.Result ->
+                when (result) {
+                    is SelectMinecraftVersionFragment.Result.Cancel -> {
+                    }
+                    is SelectMinecraftVersionFragment.Result.Select -> {
+                        val version = result.minecraft
+                        modListState.lowMinecraftVersion.value = version
+                        if (modListState.highMinecraftVersion.value < version) {
+                            modListState.highMinecraftVersion.value = version
+                        }
+                    }
+                }
+            })).openModal()
+    }
+
+    private fun selectHighMinecraftVersion() {
+        find<SelectMinecraftVersionFragment>(mapOf(
+            SelectMinecraftVersionFragment::callback to { result: SelectMinecraftVersionFragment.Result ->
+                when (result) {
+                    is SelectMinecraftVersionFragment.Result.Cancel -> {
+                    }
+                    is SelectMinecraftVersionFragment.Result.Select -> {
+                        val version = result.minecraft
+                        modListState.highMinecraftVersion.value = version
+                        if (modListState.lowMinecraftVersion.value > version) {
+                            modListState.lowMinecraftVersion.value = version
+                        }
+                    }
+                }
+            })).openModal()
     }
 
     override fun onBeforeShow() {
@@ -169,7 +242,7 @@ class ModVersionInstallListFragment : ListCellFragment<ModVersionSelectListEleme
             })
             action {
                 val loc = localToScreen(boundsInLocal)
-                val tooltip = Tooltip(item.addonFile.fileData.gameVersion.joinToString())
+                val tooltip = Tooltip(item.addonFile.fileData.gameVersion.joinToString(",\n"))
                 tooltip.isAutoHide = true
                 tooltip.hideDelay = Duration.seconds(5.0)
                 tooltip.show(this, loc.minX, loc.maxY)
@@ -219,7 +292,7 @@ class ModVersionSelectListFragment : ListCellFragment<ModVersionSelectListElemen
             })
             action {
                 val loc = localToScreen(boundsInLocal)
-                val tooltip = Tooltip(item.addonFile.fileData.gameVersion.joinToString())
+                val tooltip = Tooltip(item.addonFile.fileData.gameVersion.joinToString(",\n"))
                 tooltip.isAutoHide = true
                 tooltip.hideDelay = Duration.seconds(5.0)
                 tooltip.show(this, loc.minX, loc.maxY)

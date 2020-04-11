@@ -34,7 +34,7 @@ class ModpackDetailsController : Controller() {
                     is SelectMinecraftVersionFragment.Result.Cancel -> {
                     }
                     is SelectMinecraftVersionFragment.Result.Select -> {
-                        model.minecraftVersion.value = result.minecraft.versionString
+                        model.minecraftVersion.value = result.minecraft.toString()
                     }
                 }
             })).openModal()

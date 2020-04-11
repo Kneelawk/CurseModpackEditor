@@ -1,7 +1,6 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.curse.CurseApi
-import com.kneelawk.modpackeditor.data.curseapi.MinecraftVersionData
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import javafx.collections.FXCollections
 import javafx.scene.layout.Priority
@@ -14,7 +13,7 @@ import tornadofx.*
 class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
     val callback: (Result) -> Unit by param { _ -> }
 
-    private val selectedVersion = objectProperty<MinecraftVersionData>(null)
+    private val selectedVersion = objectProperty<MinecraftVersion>(null)
 
     private val curseApi: CurseApi by inject()
     private val model: ModpackModel by inject()
@@ -28,10 +27,7 @@ class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
                 fontWeight = FontWeight.BOLD
             }
         }
-        listview<MinecraftVersionData> {
-            cellFormat {
-                text = it.versionString
-            }
+        listview<MinecraftVersion> {
             selectedVersion.bind(selectionModel.selectedItemProperty())
             runAsync {
                 val versions = getMinecraftVersions()
@@ -42,7 +38,7 @@ class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
                         items.setAll(versions)
                     }
                     versions.forEachIndexed { index, data ->
-                        if (data.versionString == model.minecraftVersion.value) {
+                        if (data == MinecraftVersion.tryParse(model.minecraftVersion.value)) {
                             selectionModel.select(index)
                         }
                     }
@@ -77,12 +73,21 @@ class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
         }
     }
 
-    private fun getMinecraftVersions(): List<MinecraftVersionData> {
-        return curseApi.getMinecraftVersionList().sortedByDescending { MinecraftVersion.parse(it.versionString) }
+    private fun getMinecraftVersions(): List<MinecraftVersion> {
+        val versions = curseApi.getMinecraftVersionList().map {
+            MinecraftVersion.parse(it.versionString)
+        }.flatMap { version ->
+            if (version.patch == 0) {
+                listOf(version, MinecraftVersion(version.major, version.minor, version.patch, true))
+            } else {
+                listOf(version)
+            }
+        }.sortedDescending()
+        return listOf(MinecraftVersion(versions[0].major, versions[0].minor + 1, 0, true)) + versions
     }
 
     sealed class Result {
-        data class Select(val minecraft: MinecraftVersionData) : Result()
+        data class Select(val minecraft: MinecraftVersion) : Result()
         object Cancel : Result()
     }
 }

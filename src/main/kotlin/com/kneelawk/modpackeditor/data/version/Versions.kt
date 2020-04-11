@@ -2,7 +2,8 @@ package com.kneelawk.modpackeditor.data.version
 
 import java.util.regex.Pattern
 
-data class MinecraftVersion(val major: Int, val minor: Int, val patch: Int) : Comparable<MinecraftVersion> {
+data class MinecraftVersion(val major: Int, val minor: Int, val patch: Int, val snapshot: Boolean) :
+        Comparable<MinecraftVersion> {
     override fun compareTo(other: MinecraftVersion): Int {
         var c = major.compareTo(other.major)
         if (c != 0) {
@@ -12,7 +13,28 @@ data class MinecraftVersion(val major: Int, val minor: Int, val patch: Int) : Co
         if (c != 0) {
             return c
         }
-        return patch.compareTo(other.patch)
+        c = patch.compareTo(other.patch)
+        if (c != 0) {
+            return c
+        }
+        return if (snapshot && !other.snapshot) {
+            -1
+        } else if (!snapshot && other.snapshot) {
+            1
+        } else {
+            0
+        }
+    }
+
+    override fun toString(): String {
+        var str = "$major.$minor"
+        if (patch != 0) {
+            str += ".$patch"
+        }
+        if (snapshot) {
+            str += "-Snapshot"
+        }
+        return str
     }
 
     companion object {
@@ -22,12 +44,33 @@ data class MinecraftVersion(val major: Int, val minor: Int, val patch: Int) : Co
                 throw IllegalArgumentException("$version is not in valid minecraft version format")
             }
             try {
-                return when(split.size) {
-                    2 -> MinecraftVersion(split[0].toInt(), split[1].toInt(), 0)
-                    else -> MinecraftVersion(split[0].toInt(), split[1].toInt(), split[2].toInt())
-                }
+                return parseFromParts(split)
             } catch (e: NumberFormatException) {
                 throw IllegalArgumentException("$version is not in valid minecraft version format")
+            }
+        }
+
+        fun tryParse(version: String): MinecraftVersion? {
+            val split = version.split(".")
+            if (split.size < 2 || split.size > 3) {
+                return null
+            }
+            return try {
+                parseFromParts(split)
+            } catch (e: NumberFormatException) {
+                null
+            }
+        }
+
+        private fun parseFromParts(split: List<String>): MinecraftVersion {
+            return when (split.size) {
+                2 -> if (split[1].toLowerCase().endsWith("-snapshot")) {
+                    MinecraftVersion(split[0].toInt(), split[1].substring(0, split[1].lastIndexOf('-')).toInt(), 0,
+                        true)
+                } else {
+                    MinecraftVersion(split[0].toInt(), split[1].toInt(), 0, false)
+                }
+                else -> MinecraftVersion(split[0].toInt(), split[1].toInt(), split[2].toInt(), false)
             }
         }
     }
@@ -48,6 +91,14 @@ data class ForgeVersion(val major: Int, val minor: Int, val patch: Int, val buil
             return c
         }
         return build.compareTo(other.build)
+    }
+
+    override fun toString(): String {
+        var str = "forge-$major.$minor.$patch"
+        if (build != 0) {
+            str += ".$build"
+        }
+        return str
     }
 
     companion object {
