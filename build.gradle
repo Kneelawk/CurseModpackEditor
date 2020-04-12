@@ -77,7 +77,7 @@ jlink {
     }
 
     launcher {
-        jvmArgs = ['--add-exports', 'javafx.graphics/com.sun.glass.ui=com.kneelawk.merged.module', '--add-opens', 'javafx.graphics/javafx.scene=com.kneelawk.merged.module,javafx.controls/javafx.scene.control=com.kneelawk.merged.module']
+        jvmArgs = ['--add-exports', 'javafx.graphics/com.sun.glass.ui=com.kneelawk.merged.module', '--add-opens', 'javafx.graphics/javafx.scene=com.kneelawk.merged.module', '--add-opens', 'javafx.controls/javafx.scene.control=com.kneelawk.merged.module']
     }
 
     jpackage {

@@ -1,5 +1,6 @@
 package com.kneelawk.modpackeditor.ui.mods
 
+import com.kneelawk.modpackeditor.asset.AssetUtils
 import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
@@ -23,7 +24,6 @@ class ModFileDetailsFragment : Fragment() {
     private val elementUtils: ElementUtils by inject()
     private val mainController: ModpackEditorMainController by inject()
 
-    private val webStylesheet = javaClass.getResource("/com/kneelawk/modpackeditor/web.css").toExternalForm()
     private val fileName = SimpleStringProperty("")
     private val descriptionTitle =
             mainController.modpackTitle.stringBinding(fileName) { "$it - ${fileName.value} - Changelog" }
@@ -92,7 +92,7 @@ class ModFileDetailsFragment : Fragment() {
             }
         }
         webview {
-            engine.userStyleSheetLocation = webStylesheet
+            engine.userStyleSheetLocation = AssetUtils.webStylesheet
             runAsync {
                 val details = elementUtils.loadModFileChangelog(addonId)
                 runLater { engine.loadContent(details) }
