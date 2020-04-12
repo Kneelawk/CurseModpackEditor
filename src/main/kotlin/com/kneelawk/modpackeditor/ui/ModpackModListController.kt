@@ -18,25 +18,8 @@ class ModpackModListController : Controller() {
     private val modListState: ModListState by inject()
     val model: ModpackModel by inject()
 
-    init {
-        subscribe<ModRemoveEvent> {
-            removeMod(it.addonId)
-        }
-        subscribe<ModRequiredEvent> {
-            changeModRequired(it.addonId, it.required)
-        }
-        subscribe<ModDetailsEvent> {
-            showModDetails(it.addonId)
-        }
-        subscribe<ModFileDetailsEvent> {
-            showModFileDetails(it.addonId)
-        }
-        subscribe<ModChangeVersionEvent> {
-            changeModVersion(it.addonId)
-        }
-    }
-
-    private fun removeMod(addonId: FileJson) {
+    fun removeMod(addonId: FileJson) {
+        modListState.startEditing(addonId)
         find<ModpackEditorMainView>().openInternalWindow(
             find<AreYouSureDialog>(mapOf<KProperty1<AreYouSureDialog, Any>, Any>(
                 AreYouSureDialog::prompt to "Are you sure you would like to remove ${elementUtils.loadModName(
@@ -53,7 +36,8 @@ class ModpackModListController : Controller() {
         )
     }
 
-    private fun changeModVersion(addonId: FileJson) {
+    fun changeModVersion(addonId: FileJson) {
+        modListState.startEditing(addonId)
         var currentAddon: AddonId = addonId
         find<ModVersionListFragment>(mapOf<KProperty1<ModVersionListFragment, Any>, Any>(
             ModVersionListFragment::dialogType to ModVersionListFragment.Type.INSTALL,
@@ -68,12 +52,14 @@ class ModpackModListController : Controller() {
         )).openModal(modality = Modality.NONE)
     }
 
-    private fun changeModRequired(addonId: FileJson, required: Boolean) {
+    fun changeModRequired(addonId: FileJson, required: Boolean) {
+        modListState.startEditing(addonId)
         modListState.replaceAddon(addonId, addonId.toFileJson(required))
         modListState.finishEditing(addonId)
     }
 
-    private fun showModDetails(addonId: FileJson) {
+    fun showModDetails(addonId: FileJson) {
+        modListState.startEditing(addonId)
         var currentAddon: AddonId = addonId
         find<ModDetailsFragment>(mapOf<KProperty1<ModDetailsFragment, Any>, Any>(
             ModDetailsFragment::projectId to addonId.projectId,
@@ -87,7 +73,8 @@ class ModpackModListController : Controller() {
         )).openModal(modality = Modality.NONE)
     }
 
-    private fun showModFileDetails(addonId: FileJson) {
+    fun showModFileDetails(addonId: FileJson) {
+        modListState.startEditing(addonId)
         find<ModFileDetailsFragment>(mapOf<KProperty1<ModFileDetailsFragment, Any>, Any>(
             ModFileDetailsFragment::addonId to addonId,
             ModFileDetailsFragment::closeCallback to {

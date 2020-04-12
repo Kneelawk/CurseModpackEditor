@@ -12,7 +12,8 @@ import kotlin.reflect.KClass
  */
 @Suppress("UNCHECKED_CAST")
 class ParameterizedListCell<T>(val scope: Scope, listView: ListView<T>?) : ListCell<T>() {
-    private val smartProperties: ObservableMap<Any, Any> = listView?.properties ?: HashMap(properties.orEmpty()).asObservable()
+    private val smartProperties: ObservableMap<Any, Any> =
+            listView?.properties ?: HashMap(properties.orEmpty()).asObservable()
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = smartProperties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = smartProperties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private var cellFragment: ListCellFragment<T>? = null
@@ -87,15 +88,17 @@ class ParameterizedListCell<T>(val scope: Scope, listView: ListView<T>?) : ListC
     }
 }
 
-fun <T, F : ListCellFragment<T>> ListView<T>.paramCellFragment(scope: Scope, fragment: KClass<F>, vararg params: Pair<*, Any?>) {
+fun <T, F : ListCellFragment<T>> ListView<T>.paramCellFragment(scope: Scope, fragment: KClass<F>,
+                                                               vararg params: Pair<*, Any?>) {
     paramCellFragment(scope, fragment, mapOf(*params))
 }
 
-fun <T, F : ListCellFragment<T>> ListView<T>.paramCellFragment(scope: Scope, fragment: KClass<F>, params: Map<*, Any?>?) {
+fun <T, F : ListCellFragment<T>> ListView<T>.paramCellFragment(scope: Scope, fragment: KClass<F>,
+                                                               params: Map<*, Any?>?) {
     properties["tornadofx.cellFragment"] = fragment
     properties["com.kneelawk.modpackeditor.cellParams"] = params
     if (properties["tornadofx.cellFormatCapable"] != true) {
         ParameterizedListCell.setCapabilities(this)
-        cellFactory = Callback { SmartListCell(scope, it) }
+        cellFactory = Callback { ParameterizedListCell(scope, it) }
     }
 }

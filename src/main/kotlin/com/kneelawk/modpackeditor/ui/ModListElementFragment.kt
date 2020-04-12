@@ -13,7 +13,13 @@ import tornadofx.*
 /**
  * List fragment designed to show details about a mod in a modpack.
  */
-class ModpackFileListFragment : ListCellFragment<FileJson>() {
+class ModListElementFragment : ListCellFragment<FileJson>() {
+    val modRequireCallback: (FileJson, Boolean) -> Unit by param()
+    val modDetailsCallback: (FileJson) -> Unit by param()
+    val modRemoveCallback: (FileJson) -> Unit by param()
+    val modFileDetailsCallback: (FileJson) -> Unit by param()
+    val modChangeVersionCallback: (FileJson) -> Unit by param()
+
     private val modListState: ModListState by inject()
     private val elementUtils: ElementUtils by inject()
     private var imageLoader: ImageLoader? = null
@@ -112,10 +118,7 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                 }) {
                     enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        modListState.startEditing(item)
-                        fire(
-                            ModRequiredEvent(item, !item.required,
-                                scope))
+                        modRequireCallback(item, !item.required)
                     }
                 }
             }
@@ -132,16 +135,14 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                     maxWidth = Double.MAX_VALUE
                     enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        modListState.startEditing(item)
-                        fire(ModDetailsEvent(item, scope))
+                        modDetailsCallback(item)
                     }
                 }
                 button("Remove") {
                     maxWidth = Double.MAX_VALUE
                     enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        modListState.startEditing(item)
-                        fire(ModRemoveEvent(item, scope))
+                        modRemoveCallback(item)
                     }
                 }
             }
@@ -150,16 +151,14 @@ class ModpackFileListFragment : ListCellFragment<FileJson>() {
                     maxWidth = Double.MAX_VALUE
                     enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        modListState.startEditing(item)
-                        fire(ModFileDetailsEvent(item, scope))
+                        modFileDetailsCallback(item)
                     }
                 }
                 button("Change Version") {
                     maxWidth = Double.MAX_VALUE
                     enableWhen(itemProperty.isNotNull.and(notEditingProperty))
                     action {
-                        modListState.startEditing(item)
-                        fire(ModChangeVersionEvent(item, scope))
+                        modChangeVersionCallback(item)
                     }
                 }
             }

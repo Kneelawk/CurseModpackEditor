@@ -1,5 +1,6 @@
 package com.kneelawk.modpackeditor.ui
 
+import com.kneelawk.modpackeditor.ui.util.paramCellFragment
 import javafx.scene.layout.Priority
 import tornadofx.*
 
@@ -20,7 +21,13 @@ class ModpackModListView : View() {
             vgrow = Priority.ALWAYS
 
             listview(c.model.modpackMods) {
-                cellFragment(ModpackFileListFragment::class)
+                paramCellFragment(scope, ModListElementFragment::class,
+                    ModListElementFragment::modRequireCallback to c::changeModRequired,
+                    ModListElementFragment::modDetailsCallback to c::showModDetails,
+                    ModListElementFragment::modRemoveCallback to c::removeMod,
+                    ModListElementFragment::modFileDetailsCallback to c::showModFileDetails,
+                    ModListElementFragment::modChangeVersionCallback to c::changeModVersion
+                )
 
                 hgrow = Priority.ALWAYS
                 vgrow = Priority.ALWAYS
