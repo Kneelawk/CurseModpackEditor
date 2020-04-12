@@ -2,6 +2,7 @@ package com.kneelawk.modpackeditor.ui.util
 
 import javafx.beans.Observable
 import javafx.beans.binding.BooleanBinding
+import javafx.beans.binding.ListBinding
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -48,6 +49,10 @@ fun <E> ObservableList<E>.containsWhereProperty(finder: (E) -> Boolean): Boolean
 fun <E, C> ObservableList<E>.containsWhereProperty(comparisonProperty: ObservableValue<C>,
                                                    finder: (E, C?) -> Boolean): BooleanBinding {
     return CustomBindings.containsWhere(this, comparisonProperty, finder)
+}
+
+fun <I, O> ObservableList<I>.mapProperty(mapper: (I) -> O): ListBinding<O> {
+    return CustomBindings.map(this, mapper)
 }
 
 object CustomBindings {
@@ -134,6 +139,28 @@ object CustomBindings {
 
             override fun getDependencies(): ObservableList<*> {
                 return FXCollections.observableList(listOf(op, comparisonProperty))
+            }
+        }
+    }
+
+    fun <I, L, O> map(op: L, mapper: (I) -> O): ListBinding<O>
+            where L : Collection<I>,
+                  L : Observable {
+        return object : ListBinding<O>() {
+            init {
+                super.bind(op)
+            }
+
+            override fun dispose() {
+                super.unbind(op)
+            }
+
+            override fun computeValue(): ObservableList<O> {
+                return op.map(mapper).asObservable()
+            }
+
+            override fun getDependencies(): ObservableList<*> {
+                return FXCollections.singletonObservableList(op)
             }
         }
     }

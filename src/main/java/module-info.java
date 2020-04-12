@@ -10,6 +10,7 @@ module com.kneelawk.modpackeditor {
     exports com.kneelawk.modpackeditor.net;
     exports com.kneelawk.modpackeditor.ui;
     exports com.kneelawk.modpackeditor.ui.mods;
+    exports com.kneelawk.modpackeditor.ui.update;
     exports com.kneelawk.modpackeditor.ui.util;
 
     requires kotlin.stdlib;

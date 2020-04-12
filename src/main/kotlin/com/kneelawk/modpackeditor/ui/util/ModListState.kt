@@ -52,6 +52,14 @@ class ModListState : Controller() {
         }
     }
 
+    fun updateAddons(updates: List<AddonUpdate>) {
+        model.modpackMods.replaceAll { file ->
+            updates.find {
+                it.oldVersion.projectId == file.projectId && it.oldVersion.fileId == file.fileId
+            }?.newVersion?.toFileJson(file.required) ?: file
+        }
+    }
+
     fun modInstalledProperty(projectId: ObservableValue<Long>): BooleanBinding {
         return model.modpackMods.containsWhereProperty(projectId) { file, id -> file.projectId == id }
     }

@@ -45,6 +45,13 @@ class ModpackEditorMainView : View("Modpack Editor") {
                     }
                 }
             }
+            menu("Tools") {
+                item("Update Modpack...") {
+                    action {
+                        c.runModpackUpdater()
+                    }
+                }
+            }
         }
 
         vbox {

@@ -6,13 +6,12 @@ import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
-import com.kneelawk.modpackeditor.ui.SelectMinecraftVersionFragment
-import com.kneelawk.modpackeditor.ui.util.ElementUtils
-import com.kneelawk.modpackeditor.ui.util.ModListState
-import javafx.beans.binding.Binding
-import javafx.beans.property.SimpleObjectProperty
+import com.kneelawk.modpackeditor.ui.util.*
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.SimpleStringProperty
-import javafx.beans.value.ObservableLongValue
+import javafx.beans.value.ObservableValue
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.scene.control.Tooltip
 import javafx.scene.layout.Priority
@@ -27,7 +26,7 @@ import tornadofx.*
 class ModVersionListFragment : Fragment() {
     val dialogType: Type by param()
     val projectId: Long by param()
-    val selectedFileId: ObservableLongValue by param()
+    val selectedFileIds: ObservableList<AddonId> by param(FXCollections.emptyObservableList())
     val selectCallback: (AddonId) -> Unit by param { _ -> }
     val closeCallback: () -> Unit by param {}
 
@@ -51,10 +50,11 @@ class ModVersionListFragment : Fragment() {
             prefWidth(200.0)
             cellFragment(ModVersionListGameVersionFragment::class)
         }
-        column("Select", ModVersionListElement::info) {
+        readonlyColumn("Select", ModVersionListElement::addonFile) {
             minWidth(200.0)
             prefWidth(200.0)
-            cellFragment(ModVersionListSelectFragment::class)
+            paramCellFragment(scope, ModVersionListSelectFragment::class,
+                ModVersionListSelectFragment::frag to this@ModVersionListFragment)
         }
 
         columnResizePolicy = SmartResize.POLICY
@@ -98,21 +98,8 @@ class ModVersionListFragment : Fragment() {
             spacing = 10.0
             alignment = Pos.CENTER_LEFT
             checkbox("Filter minecraft version from", modListState.filterMinecraftVersion)
-            button(modListState.lowMinecraftVersion.stringBinding { it.toString() }) {
-                enableWhen(modListState.filterMinecraftVersion)
-                action {
-                    selectLowMinecraftVersion()
-                }
-            }
-            label("to") {
-                enableWhen(modListState.filterMinecraftVersion)
-            }
-            button(modListState.highMinecraftVersion.stringBinding { it.toString() }) {
-                enableWhen(modListState.filterMinecraftVersion)
-                action {
-                    selectHighMinecraftVersion()
-                }
-            }
+            add<MinecraftVersionFilterFragment>(
+                MinecraftVersionFilterFragment::enableProperty to modListState.filterMinecraftVersion)
             button("Reload") {
                 action {
                     listView.asyncItems { loadModList() }
@@ -122,8 +109,17 @@ class ModVersionListFragment : Fragment() {
         add(listView)
     }
 
+    private fun modFileSelectedProperty(addonId: AddonId): BooleanBinding {
+        return selectedFileIds.containsWhereProperty { it.projectId == addonId.projectId && it.fileId == addonId.fileId }
+    }
+
+    fun modFileSelectedProperty(addonId: ObservableValue<out AddonId>): BooleanBinding {
+        return selectedFileIds.containsWhereProperty(
+            addonId) { a, b -> a.projectId == b?.projectId && a.fileId == b.fileId }
+    }
+
     private fun loadModList(): List<ModVersionListElement> {
-        val files = curseApi.getAddonFiles(projectId).orEmpty().sortedByDescending { it.fileDate }
+        val files = curseApi.getAddonFiles(projectId).orEmpty()
         return if (modListState.filterMinecraftVersion.value) {
             files.filter { file ->
                 file.gameVersion.find { version ->
@@ -134,49 +130,9 @@ class ModVersionListFragment : Fragment() {
             }
         } else {
             files
-        }.map { file ->
-            val addonId = SimpleAddonId(projectId, file.id)
-            ModVersionListElement(AddonFile(projectId, file), when (dialogType) {
-                Type.INSTALL -> modListState.modFileInstalledProperty(addonId)
-                        .objectBinding { ModVersionListSelectInfo(this, addonId, dialogType, it!!) }
-                Type.SELECT -> selectedFileId.booleanBinding { it == file.id }
-                        .objectBinding { ModVersionListSelectInfo(this, addonId, dialogType, it!!) }
-            })
+        }.sortedByDescending { it.fileDate }.map { file ->
+            ModVersionListElement(AddonFile(projectId, file))
         }
-    }
-
-    private fun selectLowMinecraftVersion() {
-        find<SelectMinecraftVersionFragment>(mapOf(
-            SelectMinecraftVersionFragment::callback to { result: SelectMinecraftVersionFragment.Result ->
-                when (result) {
-                    is SelectMinecraftVersionFragment.Result.Cancel -> {
-                    }
-                    is SelectMinecraftVersionFragment.Result.Select -> {
-                        val version = result.minecraft
-                        modListState.lowMinecraftVersion.value = version
-                        if (modListState.highMinecraftVersion.value < version) {
-                            modListState.highMinecraftVersion.value = version
-                        }
-                    }
-                }
-            })).openModal()
-    }
-
-    private fun selectHighMinecraftVersion() {
-        find<SelectMinecraftVersionFragment>(mapOf(
-            SelectMinecraftVersionFragment::callback to { result: SelectMinecraftVersionFragment.Result ->
-                when (result) {
-                    is SelectMinecraftVersionFragment.Result.Cancel -> {
-                    }
-                    is SelectMinecraftVersionFragment.Result.Select -> {
-                        val version = result.minecraft
-                        modListState.highMinecraftVersion.value = version
-                        if (modListState.lowMinecraftVersion.value > version) {
-                            modListState.lowMinecraftVersion.value = version
-                        }
-                    }
-                }
-            })).openModal()
     }
 
     override fun onBeforeShow() {
@@ -204,8 +160,8 @@ class ModVersionListFragment : Fragment() {
             },
             ModFileDetailsFragment::addonId to addonId,
             ModFileDetailsFragment::selectedProperty to when (dialogType) {
-                Type.INSTALL -> modListState.modFileInstalledProperty(SimpleObjectProperty(addonId))
-                Type.SELECT -> selectedFileId.booleanBinding { it == addonId.fileId }
+                Type.INSTALL -> modListState.modFileInstalledProperty(addonId)
+                Type.SELECT -> modFileSelectedProperty(addonId)
             },
             ModFileDetailsFragment::selectCallback to {
                 selectCallback(addonId)
@@ -214,7 +170,7 @@ class ModVersionListFragment : Fragment() {
     }
 
     fun selectItem(addonId: AddonId) {
-        selectCallback(addonId)
+        selectCallback(SimpleAddonId(addonId))
     }
 
     enum class Type {
@@ -224,7 +180,7 @@ class ModVersionListFragment : Fragment() {
         INSTALL,
 
         /**
-         * This dialog type is where selected state depends on the selectedFileId property.
+         * This dialog type is where selected state depends on the selectedFileIds property.
          */
         SELECT
     }
@@ -233,13 +189,7 @@ class ModVersionListFragment : Fragment() {
 /**
  * Wrapper class to pass all the necessary information to the TableCellFragments.
  */
-data class ModVersionListElement(val addonFile: AddonFile, val info: Binding<ModVersionListSelectInfo?>)
-
-/**
- * Wrapper providing information specifically for the selection table cell fragment.
- */
-data class ModVersionListSelectInfo(val fragment: ModVersionListFragment, val addonId: AddonId,
-                                    val dialogType: ModVersionListFragment.Type, val selected: Boolean)
+data class ModVersionListElement(val addonFile: AddonFile)
 
 /**
  * Table cell fragment for displaying file details like display name and file name.
@@ -284,8 +234,13 @@ class ModVersionListGameVersionFragment : TableCellFragment<ModVersionListElemen
 /**
  * Table cell fragment for displaying the file selection and details buttons.
  */
-class ModVersionListSelectFragment : TableCellFragment<ModVersionListElement, ModVersionListSelectInfo?>() {
-    private val notSelected = itemProperty.booleanBinding { it?.selected ?: true }.not()
+class ModVersionListSelectFragment : TableCellFragment<ModVersionListElement, AddonFile>() {
+    val frag: ModVersionListFragment by param()
+
+    private val modListState: ModListState by inject()
+
+    private val selected = frag.modFileSelectedProperty(itemProperty)
+    private val installed = modListState.modFileInstalledProperty(itemProperty)
 
     override val root = hbox {
         padding = insets(5.0)
@@ -295,19 +250,24 @@ class ModVersionListSelectFragment : TableCellFragment<ModVersionListElement, Mo
         button("Details") {
             enableWhen(itemProperty.isNotNull)
             action {
-                item?.fragment?.showDetails(item!!.addonId)
+                item?.let { frag.showDetails(it) }
             }
         }
-        button(itemProperty.stringBinding(notSelected) {
-            when (it?.dialogType) {
-                ModVersionListFragment.Type.INSTALL -> if (notSelected.value == true) "Install" else "Installed"
-                ModVersionListFragment.Type.SELECT -> if (notSelected.value == true) "Select" else "Selected"
-                null -> ""
+        button(installed.stringBinding(selected) {
+            when (frag.dialogType) {
+                ModVersionListFragment.Type.INSTALL -> if (it == false) "Install" else "Installed"
+                ModVersionListFragment.Type.SELECT -> {
+                    when {
+                        it == true -> "Installed"
+                        selected.value == true -> "Selected"
+                        else -> "Select"
+                    }
+                }
             }
         }) {
-            enableWhen(itemProperty.isNotNull.and(notSelected))
+            enableWhen(itemProperty.isNotNull.and(selected.not()).and(installed.not()))
             action {
-                item?.fragment?.selectItem(item!!.addonId)
+                item?.let { frag.selectItem(it) }
             }
         }
     }

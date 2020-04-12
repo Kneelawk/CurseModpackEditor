@@ -1,6 +1,7 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.curse.ModpackFile
+import com.kneelawk.modpackeditor.ui.update.ModpackUpdateView
 import com.kneelawk.modpackeditor.ui.util.ErrorOpeningModpackDialog
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.FileChooser
@@ -115,5 +116,9 @@ class ModpackEditorMainController : Controller() {
         } ?: run {
             running.value = false
         }
+    }
+
+    fun runModpackUpdater() {
+        find<ModpackUpdateView>().openModal()
     }
 }
