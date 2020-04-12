@@ -43,7 +43,7 @@ class ModpackModListController : Controller() {
                     addonId)}?",
                 AreYouSureDialog::callback to { res: AreYouSureDialog.Result ->
                     if (res == AreYouSureDialog.Result.Confirm) {
-                        model.modpackMods.remove(addonId)
+                        modListState.removeAddon(addonId)
                     }
                 },
                 AreYouSureDialog::closeCallback to {
@@ -59,7 +59,6 @@ class ModpackModListController : Controller() {
             ModVersionListFragment::dialogType to ModVersionListFragment.Type.INSTALL,
             ModVersionListFragment::projectId to addonId.projectId,
             ModVersionListFragment::selectCallback to { newAddon: AddonId ->
-                modListState.replaceEditing(currentAddon, newAddon)
                 modListState.replaceAddon(currentAddon, newAddon.toFileJson(addonId.required))
                 currentAddon = newAddon
             },
@@ -79,7 +78,6 @@ class ModpackModListController : Controller() {
         find<ModDetailsFragment>(mapOf<KProperty1<ModDetailsFragment, Any>, Any>(
             ModDetailsFragment::projectId to addonId.projectId,
             ModDetailsFragment::changeVersionCallback to { newAddon: AddonId ->
-                modListState.replaceEditing(currentAddon, newAddon)
                 modListState.replaceAddon(currentAddon, newAddon.toFileJson(addonId.required))
                 currentAddon = newAddon
             },

@@ -3,7 +3,10 @@ package com.kneelawk.modpackeditor.ui
 import com.kneelawk.modpackeditor.curse.ModpackFile
 import com.kneelawk.modpackeditor.ui.update.ModpackUpdateView
 import com.kneelawk.modpackeditor.ui.util.ErrorOpeningModpackDialog
+import com.kneelawk.modpackeditor.ui.util.ModListState
+import com.kneelawk.modpackeditor.ui.util.ProgressDialog
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.concurrent.Worker
 import javafx.stage.FileChooser
 import tornadofx.*
 import java.io.File
@@ -17,6 +20,7 @@ import kotlin.reflect.KProperty1
  */
 class ModpackEditorMainController : Controller() {
     val model: ModpackModel by inject()
+    val modListState: ModListState by inject()
 
     val running = SimpleBooleanProperty(false)
     val modpackTitle = model.modpackName.stringBinding(model.modpackVersion) { "$it - ${model.modpackVersion.value}" }
@@ -120,5 +124,22 @@ class ModpackEditorMainController : Controller() {
 
     fun runModpackUpdater() {
         find<ModpackUpdateView>().openModal()
+    }
+
+    fun sortMods() {
+        val openProperty = SimpleBooleanProperty(true)
+        val task = modListState.sortAddons()
+        task.finally { openProperty.value = false }
+        find<ModpackEditorMainView>().openInternalWindow(
+            find<ProgressDialog>(
+                ProgressDialog::titleString to "Sorting addons...",
+                ProgressDialog::progressProperty to task.progressProperty(),
+                ProgressDialog::statusProperty to task.messageProperty(),
+                ProgressDialog::openProperty to openProperty,
+                ProgressDialog::cancelCallback to {
+                    task.cancel()
+                }
+            )
+        )
     }
 }

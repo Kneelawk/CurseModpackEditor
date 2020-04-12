@@ -51,6 +51,11 @@ class ModpackEditorMainView : View("Modpack Editor") {
                         c.runModpackUpdater()
                     }
                 }
+                item("Sort Mods By Name...") {
+                    action {
+                        c.sortMods()
+                    }
+                }
             }
         }
 
