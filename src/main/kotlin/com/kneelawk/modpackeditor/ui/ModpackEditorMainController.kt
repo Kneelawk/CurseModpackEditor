@@ -6,8 +6,8 @@ import com.kneelawk.modpackeditor.ui.util.ErrorOpeningModpackDialog
 import com.kneelawk.modpackeditor.ui.util.ModListState
 import com.kneelawk.modpackeditor.ui.util.ProgressDialog
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.concurrent.Worker
 import javafx.stage.FileChooser
+import javafx.stage.Modality
 import tornadofx.*
 import java.io.File
 import java.io.IOException
@@ -123,7 +123,8 @@ class ModpackEditorMainController : Controller() {
     }
 
     fun runModpackUpdater() {
-        find<ModpackUpdateView>().openModal()
+        find<ModpackUpdateView>().openModal(modality = Modality.WINDOW_MODAL,
+            owner = find<ModpackEditorMainView>().currentWindow)
     }
 
     fun sortMods() {

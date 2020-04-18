@@ -37,7 +37,7 @@ class ModpackDetailsController : Controller() {
                         model.minecraftVersion.value = result.minecraft.toString()
                     }
                 }
-            })).openModal()
+            })).openModal(owner = find<ModpackDetailsView>().currentWindow)
     }
 
     fun selectModLoader() {
@@ -51,6 +51,6 @@ class ModpackDetailsController : Controller() {
                         model.modLoaderVersion.value = result.modLoader.name
                     }
                 }
-            })).openModal()
+            })).openModal(owner = find<ModpackDetailsView>().currentWindow)
     }
 }
