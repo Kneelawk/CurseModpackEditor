@@ -2,7 +2,10 @@ package com.kneelawk.modpackeditor.ui.util
 
 import com.kneelawk.modpackeditor.cache.ResourceCaches
 import com.kneelawk.modpackeditor.curse.AddonUtils
+import com.kneelawk.modpackeditor.curse.CurseApi
 import com.kneelawk.modpackeditor.data.AddonId
+import com.kneelawk.modpackeditor.data.CategoryList
+import com.kneelawk.modpackeditor.data.curseapi.AddonData
 import javafx.scene.image.Image
 import tornadofx.Controller
 
@@ -11,13 +14,30 @@ import tornadofx.Controller
  */
 class ElementUtils : Controller() {
     private val cache: ResourceCaches by inject()
+    private val curseApi: CurseApi by inject()
+
+    fun loadTinyImage(url: String?): Image {
+        return cache.tinyImageCache[AddonUtils.getIconUrl(url)]
+    }
+
+    fun loadSmallImage(url: String?): Image {
+        return cache.smallImageCache[AddonUtils.getIconUrl(url)]
+    }
 
     fun loadSmallImage(projectId: Long?): Image {
         return cache.smallImageCache[AddonUtils.getIconUrl(projectId?.let { cache.addonCache[it].orNull() })]
     }
 
+    fun loadImage(url: String?): Image {
+        return cache.imageCache[AddonUtils.getIconUrl(url)]
+    }
+
+    fun loadImage(addon: AddonData?): Image {
+        return cache.imageCache[AddonUtils.getIconUrl(addon)]
+    }
+
     fun loadImage(projectId: Long?): Image {
-        return cache.imageCache[AddonUtils.getIconUrl(projectId?.let { cache.addonCache[it].orNull() })]
+        return loadImage(projectId?.let { cache.addonCache[it].orNull() })
     }
 
     fun loadImage(file: AddonId?): Image {
@@ -80,5 +100,10 @@ class ElementUtils : Controller() {
 
     fun loadModFileName(file: AddonId?): String {
         return file?.let { cache.getAddonFile(it).orNull()?.fileName } ?: "unknown"
+    }
+
+    fun loadModCategories(): CategoryList {
+        val categories = curseApi.getCategoryList()
+        return CategoryList(categories.find { it.id == 6L }!!, categories.filter { it.rootGameCategoryId == 6L })
     }
 }

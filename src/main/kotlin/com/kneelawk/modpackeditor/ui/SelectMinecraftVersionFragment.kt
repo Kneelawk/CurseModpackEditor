@@ -11,12 +11,13 @@ import tornadofx.*
  * Dialog to select a minecraft version.
  */
 class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
-    val callback: (Result) -> Unit by param { _ -> }
-
-    private val selectedVersion = objectProperty<MinecraftVersion>(null)
-
     private val curseApi: CurseApi by inject()
     private val model: ModpackModel by inject()
+
+    val callback: (Result) -> Unit by param { _ -> }
+    val previousVersion: MinecraftVersion? by param<MinecraftVersion?>(MinecraftVersion.tryParse(model.minecraftVersion.value))
+
+    private val selectedVersion = objectProperty<MinecraftVersion>(null)
 
     override val root = vbox {
         padding = insets(25.0)
@@ -38,7 +39,7 @@ class SelectMinecraftVersionFragment : Fragment("Select a Minecraft Version") {
                         items.setAll(versions)
                     }
                     versions.forEachIndexed { index, data ->
-                        if (data == MinecraftVersion.tryParse(model.minecraftVersion.value)) {
+                        if (data == previousVersion) {
                             selectionModel.select(index)
                         }
                     }

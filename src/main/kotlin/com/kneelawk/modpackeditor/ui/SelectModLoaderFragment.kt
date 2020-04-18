@@ -12,15 +12,16 @@ import tornadofx.*
  * Dialog to select a mod loader.
  */
 class SelectModLoaderFragment : Fragment("Select a Forge Version") {
+    private val curseApi: CurseApi by inject()
+    private val model: ModpackModel by inject()
+
     val minecraftVersion: String? by param<String?>(null)
+    val previousVersion: String? by param<String?>(model.modLoaderVersion.value)
     val callback: (Result) -> Unit by param { _ -> }
 
     private val modLoaderList = listProperty<ModLoaderListElementData>(FXCollections.observableArrayList())
     private val selectedVersion = objectProperty<ModLoaderListElementData>(null)
     private val onlyCompatible = booleanProperty(true)
-
-    private val curseApi: CurseApi by inject()
-    private val model: ModpackModel by inject()
 
     override val root = vbox {
         padding = insets(25.0)
@@ -55,7 +56,7 @@ class SelectModLoaderFragment : Fragment("Select a Forge Version") {
                         items.setAll(modLoaders)
                     }
                     modLoaders.forEachIndexed { index, data ->
-                        if (data.name == model.modLoaderVersion.value) {
+                        if (data.name == previousVersion) {
                             selectionModel.select(index)
                         }
                     }

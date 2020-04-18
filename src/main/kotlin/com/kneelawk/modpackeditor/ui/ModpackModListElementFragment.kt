@@ -1,11 +1,10 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.data.manifest.FileJson
-import com.kneelawk.modpackeditor.ui.util.*
+import com.kneelawk.modpackeditor.ui.util.ElementUtils
+import com.kneelawk.modpackeditor.ui.util.ModListState
+import com.kneelawk.modpackeditor.ui.util.asyncExpression
 import javafx.geometry.Pos
-import javafx.scene.control.Label
-import javafx.scene.image.Image
-import javafx.scene.image.ImageView
 import javafx.scene.layout.Priority
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -13,7 +12,7 @@ import tornadofx.*
 /**
  * List fragment designed to show details about a mod in a modpack.
  */
-class ModListElementFragment : ListCellFragment<FileJson>() {
+class ModpackModListElementFragment : ListCellFragment<FileJson>() {
     val modRequireCallback: (FileJson, Boolean) -> Unit by param()
     val modDetailsCallback: (FileJson) -> Unit by param()
     val modRemoveCallback: (FileJson) -> Unit by param()
@@ -22,57 +21,37 @@ class ModListElementFragment : ListCellFragment<FileJson>() {
 
     private val modListState: ModListState by inject()
     private val elementUtils: ElementUtils by inject()
-    private var imageLoader: ImageLoader? = null
-    private var modNameLoader: LabelLoader? = null
-    private var modAuthorLoader: LabelLoader? = null
-    private var modFileDisplayLoader: LabelLoader? = null
-    private var modFileNameLoader: LabelLoader? = null
 
-    private val notEditingProperty = modListState.notEditingProperty(itemProperty)
+    private val notEditingProperty = modListState.notEditingProperty(itemProperty.objectBinding { it?.projectId })
 
     override val root = hbox {
         padding = insets(5.0)
         spacing = 10.0
         alignment = Pos.CENTER
-        imageview {
-            imageLoader =
-                    ImageLoader(this, itemProperty, { image = null }, { elementUtils.loadImage(it) }, { image = it })
-        }
+        imageview(itemProperty.asyncExpression({ null }, { elementUtils.loadImage(it) }))
         vbox {
             spacing = 10.0
             alignment = Pos.CENTER_LEFT
             hbox {
                 spacing = 10.0
                 alignment = Pos.BOTTOM_LEFT
-                label {
+                label(itemProperty.asyncExpression({ it?.projectId?.toString() ?: "" },
+                    { elementUtils.loadModName(it) })) {
                     style {
                         fontWeight = FontWeight.BOLD
                         fontSize = 16.px
                     }
-                    modNameLoader = LabelLoader(this, itemProperty, { text = it?.projectId?.toString() ?: "" },
-                        { elementUtils.loadModName(it) }, { text = it })
                 }
                 label("by")
-                label {
-                    modAuthorLoader =
-                            LabelLoader(this, itemProperty, { text = "Loading..." }, { elementUtils.loadModAuthor(it) },
-                                { text = it })
-                }
+                label(itemProperty.asyncExpression({ "Loading..." }, { elementUtils.loadModAuthor(it) }))
             }
             hbox {
                 spacing = 10.0
                 alignment = Pos.BOTTOM_LEFT
-                label {
-                    modFileDisplayLoader =
-                            LabelLoader(this, itemProperty, { text = it?.fileId?.toString() ?: "" },
-                                { elementUtils.loadModFileDisplay(it) }, { text = it })
-                }
+                label(itemProperty.asyncExpression({ it?.fileId?.toString() ?: "" },
+                    { elementUtils.loadModFileDisplay(it) }))
                 label("-")
-                label {
-                    modFileNameLoader =
-                            LabelLoader(this, itemProperty, { text = "loading..." },
-                                { elementUtils.loadModFileName(it) }, { text = it })
-                }
+                label(itemProperty.asyncExpression({ "loading..." }, { elementUtils.loadModFileName(it) }))
             }
             hbox {
                 spacing = 10.0
@@ -165,6 +144,3 @@ class ModListElementFragment : ListCellFragment<FileJson>() {
         }
     }
 }
-
-typealias ImageLoader = AsynchronousLoader<FileJson?, ImageView, Image>
-typealias LabelLoader = AsynchronousLoader<FileJson?, Label, String>

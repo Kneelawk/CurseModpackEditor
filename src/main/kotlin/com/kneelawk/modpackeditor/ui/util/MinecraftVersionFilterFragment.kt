@@ -4,6 +4,7 @@ import com.kneelawk.modpackeditor.ui.SelectMinecraftVersionFragment
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.geometry.Pos
+import javafx.stage.Window
 import tornadofx.*
 
 /**
@@ -12,6 +13,7 @@ import tornadofx.*
 class MinecraftVersionFilterFragment : Fragment() {
     private val modListState: ModListState by inject()
     val enableProperty: ObservableValue<Boolean> by param(SimpleBooleanProperty(true))
+    val ownerWindow: () -> Window? by param { currentWindow }
 
     override val root = hbox {
         spacing = 10.0
@@ -31,7 +33,8 @@ class MinecraftVersionFilterFragment : Fragment() {
     }
 
     private fun selectLowMinecraftVersion() {
-        find<SelectMinecraftVersionFragment>(mapOf(
+        find<SelectMinecraftVersionFragment>(
+            SelectMinecraftVersionFragment::previousVersion to modListState.lowMinecraftVersion.value,
             SelectMinecraftVersionFragment::callback to { result: SelectMinecraftVersionFragment.Result ->
                 when (result) {
                     is SelectMinecraftVersionFragment.Result.Cancel -> {
@@ -44,11 +47,12 @@ class MinecraftVersionFilterFragment : Fragment() {
                         }
                     }
                 }
-            })).openModal()
+            }).openModal(owner = ownerWindow())
     }
 
     private fun selectHighMinecraftVersion() {
-        find<SelectMinecraftVersionFragment>(mapOf(
+        find<SelectMinecraftVersionFragment>(
+            SelectMinecraftVersionFragment::previousVersion to modListState.highMinecraftVersion.value,
             SelectMinecraftVersionFragment::callback to { result: SelectMinecraftVersionFragment.Result ->
                 when (result) {
                     is SelectMinecraftVersionFragment.Result.Cancel -> {
@@ -61,6 +65,6 @@ class MinecraftVersionFilterFragment : Fragment() {
                         }
                     }
                 }
-            })).openModal()
+            }).openModal(owner = ownerWindow())
     }
 }

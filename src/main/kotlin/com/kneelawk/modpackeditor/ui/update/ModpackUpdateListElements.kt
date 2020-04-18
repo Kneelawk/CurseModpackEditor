@@ -2,18 +2,13 @@ package com.kneelawk.modpackeditor.ui.update
 
 import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.ui.util.AddonUpdate
-import com.kneelawk.modpackeditor.ui.util.AsynchronousLoader
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
+import com.kneelawk.modpackeditor.ui.util.asyncExpression
 import javafx.beans.property.BooleanProperty
 import javafx.geometry.Pos
-import javafx.scene.Node
-import javafx.scene.control.Label
 import javafx.scene.control.Tooltip
 import javafx.util.Duration
 import tornadofx.*
-
-typealias LabelLoader = AsynchronousLoader<AddonUpdate?, Label, String>
-typealias EnableLoader = AsynchronousLoader<AddonUpdate?, Node, Boolean>
 
 /**
  * Represents an element in a modpack update mod list.
@@ -38,11 +33,6 @@ class ModpackUpdateListEnableFragment : TableCellFragment<ModpackUpdateListEleme
 class ModpackUpdateListFileFragment : TableCellFragment<ModpackUpdateListElement, AddonUpdate>() {
     private val elementUtils: ElementUtils by inject()
 
-    private var oldDisplayLoader: LabelLoader? = null
-    private var oldNameLoader: LabelLoader? = null
-    private var newDisplayLoader: LabelLoader? = null
-    private var newNameLoader: LabelLoader? = null
-
     override val root = gridpane {
         padding = insets(5.0)
         hgap = 10.0
@@ -51,27 +41,17 @@ class ModpackUpdateListFileFragment : TableCellFragment<ModpackUpdateListElement
 
         row {
             label("Old:")
-            label {
-                oldDisplayLoader = LabelLoader(this, itemProperty, { text = it?.oldVersion?.fileId?.toString() ?: "" },
-                    { elementUtils.loadModFileDisplay(it?.oldVersion) }, { text = it })
-            }
+            label(itemProperty.asyncExpression({ it?.oldVersion?.fileId?.toString() ?: "" },
+                { elementUtils.loadModFileDisplay(it?.oldVersion) }))
             label("-")
-            label {
-                oldNameLoader = LabelLoader(this, itemProperty, { text = "loading..." },
-                    { elementUtils.loadModFileName(it?.oldVersion) }, { text = it })
-            }
+            label(itemProperty.asyncExpression({ "loading..." }, { elementUtils.loadModFileName(it?.oldVersion) }))
         }
         row {
             label("New:")
-            label {
-                newDisplayLoader = LabelLoader(this, itemProperty, { text = it?.newVersion?.fileId?.toString() ?: "" },
-                    { elementUtils.loadModFileDisplay(it?.newVersion) }, { text = it })
-            }
+            label(itemProperty.asyncExpression({ it?.newVersion?.fileId?.toString() ?: "" },
+                { elementUtils.loadModFileDisplay(it?.newVersion) }))
             label("-")
-            label {
-                newNameLoader = LabelLoader(this, itemProperty, { text = "loading..." },
-                    { elementUtils.loadModFileName(it?.newVersion) }, { text = it })
-            }
+            label(itemProperty.asyncExpression({ "loading..." }, { elementUtils.loadModFileName(it?.newVersion) }))
         }
     }
 }
@@ -82,11 +62,6 @@ class ModpackUpdateListFileFragment : TableCellFragment<ModpackUpdateListElement
 class ModpackUpdateListGameVersionFragment : TableCellFragment<ModpackUpdateListElement, AddonUpdate>() {
     private val elementUtils: ElementUtils by inject()
 
-    private var oldGameVersionLoader: LabelLoader? = null
-    private var oldGameVersionEnableLoader: EnableLoader? = null
-    private var newGameVersionLoader: LabelLoader? = null
-    private var newGameVersionEnableLoader: EnableLoader? = null
-
     override val root = gridpane {
         padding = insets(5.0)
         hgap = 5.0
@@ -95,13 +70,11 @@ class ModpackUpdateListGameVersionFragment : TableCellFragment<ModpackUpdateList
 
         row {
             label("Old:")
-            label {
-                oldGameVersionLoader = LabelLoader(this, itemProperty, { text = "loading..." },
-                    { elementUtils.loadModFileGameVersions(it?.oldVersion)[0] }, { text = it })
-            }
+            label(itemProperty.asyncExpression({ "loading..." },
+                { elementUtils.loadModFileGameVersions(it?.oldVersion)[0] }))
             button("+") {
-                oldGameVersionEnableLoader = EnableLoader(this, itemProperty, { isDisable = true },
-                    { elementUtils.loadModFileGameVersions(it?.oldVersion).size > 1 }, { isDisable = !it })
+                enableWhen(itemProperty.asyncExpression({ false },
+                    { elementUtils.loadModFileGameVersions(it?.oldVersion).size > 1 }))
                 action {
                     runAsync {
                         elementUtils.loadModFileGameVersions(item.oldVersion)
@@ -118,13 +91,11 @@ class ModpackUpdateListGameVersionFragment : TableCellFragment<ModpackUpdateList
 
         row {
             label("New:")
-            label {
-                newGameVersionLoader = LabelLoader(this, itemProperty, { text = "loading..." },
-                    { elementUtils.loadModFileGameVersions(it?.newVersion)[0] }, { text = it })
-            }
+            label(itemProperty.asyncExpression({ "loading..." },
+                { elementUtils.loadModFileGameVersions(it?.newVersion)[0] }))
             button("+") {
-                newGameVersionEnableLoader = EnableLoader(this, itemProperty, { isDisable = true },
-                    { elementUtils.loadModFileGameVersions(it?.newVersion).size > 1 }, { isDisable = !it })
+                enableWhen(itemProperty.asyncExpression({ false },
+                    { elementUtils.loadModFileGameVersions(it?.newVersion).size > 1 }))
                 action {
                     runAsync {
                         elementUtils.loadModFileGameVersions(item.newVersion)

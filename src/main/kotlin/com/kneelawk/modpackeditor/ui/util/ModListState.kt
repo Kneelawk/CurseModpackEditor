@@ -3,6 +3,7 @@ package com.kneelawk.modpackeditor.ui.util
 import com.kneelawk.modpackeditor.cache.ResourceCaches
 import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.SimpleAddonId
+import com.kneelawk.modpackeditor.data.curseapi.AddonFileData
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.ModpackModel
@@ -14,7 +15,6 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import tornadofx.Controller
-import tornadofx.objectBinding
 import tornadofx.runLater
 import tornadofx.task
 
@@ -23,40 +23,37 @@ import tornadofx.task
  */
 class ModListState : Controller() {
     private val model: ModpackModel by inject()
-    private val editingMods = SimpleSetProperty<SimpleAddonId>(FXCollections.observableSet())
     private val cache: ResourceCaches by inject()
 
+    private val editingMods = SimpleSetProperty<Long>(FXCollections.observableSet())
     val filterMinecraftVersion = SimpleBooleanProperty(true)
     val lowMinecraftVersion = SimpleObjectProperty(MinecraftVersion.parse(model.minecraftVersion.value))
     val highMinecraftVersion = SimpleObjectProperty(MinecraftVersion.parse(model.minecraftVersion.value))
 
-    fun startEditing(addonId: AddonId) {
-        editingMods.add(SimpleAddonId(addonId))
+    fun startEditing(projectId: Long) {
+        editingMods.add(projectId)
     }
 
-    fun finishEditing(addonId: AddonId) {
-        editingMods.remove(SimpleAddonId(addonId))
+    fun finishEditing(projectId: Long) {
+        editingMods.remove(projectId)
     }
 
-    fun replaceEditing(oldAddon: AddonId, newAddon: AddonId) {
-        editingMods.remove(SimpleAddonId(oldAddon))
-        editingMods.add(SimpleAddonId(newAddon))
+    fun notEditingProperty(property: ObservableValue<Long?>): BooleanBinding {
+        return editingMods.containsProperty(property).not()
     }
 
-    fun notEditingProperty(property: ObservableValue<out AddonId>): BooleanBinding {
-        return editingMods.containsProperty(property.objectBinding { it?.let { SimpleAddonId(it) } }).not()
-    }
-
-    fun replaceAddon(oldAddon: AddonId, newAddon: FileJson) {
-        val oldId = SimpleAddonId(oldAddon)
-        val newId = SimpleAddonId(newAddon)
-        if (oldId != newId && editingMods.contains(oldId)) {
-            editingMods.remove(oldId)
-            editingMods.add(newId)
+    fun addAddon(addonId: AddonId) {
+        val oldAddon = model.modpackMods.find { it.projectId == addonId.projectId }
+        if (oldAddon == null) {
+            model.modpackMods.add(addonId.toFileJson(true))
+        } else {
+            replaceAddon(oldAddon.projectId, addonId.toFileJson(oldAddon.required))
         }
+    }
 
+    fun replaceAddon(oldProject: Long, newAddon: FileJson) {
         model.modpackMods.replaceAll {
-            if (it.projectId == oldAddon.projectId && it.fileId == oldAddon.fileId) {
+            if (it.projectId == oldProject) {
                 newAddon
             } else {
                 it
@@ -65,25 +62,17 @@ class ModListState : Controller() {
     }
 
     fun updateAddons(updates: List<AddonUpdate>) {
-        updates.forEach {
-            val oldId = SimpleAddonId(it.oldVersion)
-            if (editingMods.contains(oldId)) {
-                editingMods.remove(oldId)
-                editingMods.add(SimpleAddonId(it.newVersion))
-            }
-        }
-
         model.modpackMods.replaceAll { file ->
-            updates.find {
-                it.oldVersion.projectId == file.projectId && it.oldVersion.fileId == file.fileId
-            }?.newVersion?.toFileJson(file.required) ?: file
+            val update = updates.find {
+                it.projectId == file.projectId
+            }
+            update?.let { FileJson(it.projectId, it.newFileId, true) } ?: file
         }
     }
 
-    fun removeAddon(addonId: AddonId) {
-        val condition = { it: AddonId -> it.projectId == addonId.projectId && it.fileId == addonId.fileId }
-        editingMods.removeIf(condition)
-        model.modpackMods.removeIf(condition)
+    fun removeAddon(projectId: Long) {
+        editingMods.removeIf { it == projectId }
+        model.modpackMods.removeIf { it.projectId == projectId }
     }
 
     fun sortAddons(): Task<Unit> {
@@ -113,8 +102,8 @@ class ModListState : Controller() {
         }
     }
 
-    fun modInstalledProperty(projectId: ObservableValue<Long>): BooleanBinding {
-        return model.modpackMods.containsWhereProperty(projectId) { file, id -> file.projectId == id }
+    fun modInstalledProperty(projectId: ObservableValue<out Number?>): BooleanBinding {
+        return model.modpackMods.containsWhereProperty(projectId) { file, id -> file.projectId == id?.toLong() }
     }
 
     fun modFileInstalledProperty(addonId: AddonId): BooleanBinding {
@@ -124,6 +113,38 @@ class ModListState : Controller() {
     fun modFileInstalledProperty(addonId: ObservableValue<out AddonId?>): BooleanBinding {
         return model.modpackMods.containsWhereProperty(addonId) { file, id ->
             file.projectId == id?.projectId && file.fileId == id.fileId
+        }
+    }
+
+    fun containsByMinecraftVersion(files: List<AddonFileData>): Boolean {
+        val low = lowMinecraftVersion.value
+        val high = highMinecraftVersion.value
+        return files.find { file ->
+            file.gameVersion.find { version ->
+                MinecraftVersion.tryParse(version)?.let {
+                    it >= low && it <= high
+                } ?: false
+            } != null
+        } != null
+    }
+
+    fun filterByMinecraftVersion(files: List<AddonFileData>): List<AddonFileData> {
+        val low = lowMinecraftVersion.value
+        val high = highMinecraftVersion.value
+        return files.filter { file ->
+            file.gameVersion.find { version ->
+                MinecraftVersion.tryParse(version)?.let {
+                    it >= low && it <= high
+                } ?: false
+            } != null
+        }
+    }
+
+    fun maybeFilterByMinecraftVersion(files: List<AddonFileData>): List<AddonFileData> {
+        return if (filterMinecraftVersion.value) {
+            filterByMinecraftVersion(files)
+        } else {
+            files
         }
     }
 }

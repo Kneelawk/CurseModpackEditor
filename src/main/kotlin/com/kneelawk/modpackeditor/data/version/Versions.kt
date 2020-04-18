@@ -17,12 +17,10 @@ data class MinecraftVersion(val major: Int, val minor: Int, val patch: Int, val 
         if (c != 0) {
             return c
         }
-        return if (snapshot && !other.snapshot) {
-            -1
-        } else if (!snapshot && other.snapshot) {
-            1
-        } else {
-            0
+        return when {
+            snapshot && !other.snapshot -> -1
+            !snapshot && other.snapshot -> 1
+            else -> 0
         }
     }
 
@@ -63,13 +61,10 @@ data class MinecraftVersion(val major: Int, val minor: Int, val patch: Int, val 
         }
 
         private fun parseFromParts(split: List<String>): MinecraftVersion {
-            return when (split.size) {
-                2 -> if (split[1].toLowerCase().endsWith("-snapshot")) {
-                    MinecraftVersion(split[0].toInt(), split[1].substring(0, split[1].lastIndexOf('-')).toInt(), 0,
-                        true)
-                } else {
-                    MinecraftVersion(split[0].toInt(), split[1].toInt(), 0, false)
-                }
+            return when {
+                split.size == 2 && split[1].toLowerCase().endsWith("-snapshot") -> MinecraftVersion(split[0].toInt(),
+                    split[1].substring(0, split[1].lastIndexOf('-')).toInt(), 0, true)
+                split.size == 2 -> MinecraftVersion(split[0].toInt(), split[1].toInt(), 0, false)
                 else -> MinecraftVersion(split[0].toInt(), split[1].toInt(), split[2].toInt(), false)
             }
         }

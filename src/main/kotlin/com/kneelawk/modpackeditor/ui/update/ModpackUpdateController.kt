@@ -3,7 +3,6 @@ package com.kneelawk.modpackeditor.ui.update
 import com.google.common.collect.ImmutableList
 import com.kneelawk.modpackeditor.curse.CurseApi
 import com.kneelawk.modpackeditor.data.AddonId
-import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.ModpackModel
 import com.kneelawk.modpackeditor.ui.mods.ModFileDetailsFragment
@@ -75,7 +74,7 @@ class ModpackUpdateController : Controller() {
         }.maxBy { it.fileDate }
 
         return if (file != null && file.id != addonId.fileId) {
-            AddonUpdate(addonId, SimpleAddonId(addonId.projectId, file.id))
+            AddonUpdate(addonId.projectId, addonId.fileId, file.id)
         } else {
             null
         }
@@ -88,20 +87,19 @@ class ModpackUpdateController : Controller() {
     }
 
     fun changeModVersion(addonId: AddonId) {
-        var currentAddonId = addonId
         find<ModVersionListFragment>(
             ModVersionListFragment::dialogType to ModVersionListFragment.Type.SELECT,
             ModVersionListFragment::projectId to addonId.projectId,
             ModVersionListFragment::selectedFileIds to selectedAddonIds,
             ModVersionListFragment::selectCallback to { newAddonId: AddonId ->
                 updateElements.replaceAll {
-                    if (it.update.newVersion.projectId == currentAddonId.projectId && it.update.newVersion.fileId == currentAddonId.fileId) {
-                        ModpackUpdateListElement(it.enabled, AddonUpdate(it.update.oldVersion, newAddonId))
+                    if (it.update.projectId == addonId.projectId) {
+                        ModpackUpdateListElement(it.enabled,
+                            AddonUpdate(it.update.projectId, it.update.oldFileId, newAddonId.fileId))
                     } else {
                         it
                     }
                 }
-                currentAddonId = newAddonId
             }
         ).openModal()
     }

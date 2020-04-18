@@ -16,17 +16,24 @@ class ModpackModListView : View() {
 
         label(c.model.modpackMods.stringBinding { "${it!!.size} Mods" })
 
+        button("Add Mods...") {
+            maxWidth = Double.MAX_VALUE
+            action {
+                c.addMods()
+            }
+        }
+
         hbox {
             spacing = 10.0
             vgrow = Priority.ALWAYS
 
             listview(c.model.modpackMods) {
-                paramCellFragment(scope, ModListElementFragment::class,
-                    ModListElementFragment::modRequireCallback to c::changeModRequired,
-                    ModListElementFragment::modDetailsCallback to c::showModDetails,
-                    ModListElementFragment::modRemoveCallback to c::removeMod,
-                    ModListElementFragment::modFileDetailsCallback to c::showModFileDetails,
-                    ModListElementFragment::modChangeVersionCallback to c::changeModVersion
+                paramCellFragment(scope, ModpackModListElementFragment::class,
+                    ModpackModListElementFragment::modRequireCallback to c::changeModRequired,
+                    ModpackModListElementFragment::modDetailsCallback to c::showModDetails,
+                    ModpackModListElementFragment::modRemoveCallback to c::removeMod,
+                    ModpackModListElementFragment::modFileDetailsCallback to c::showModFileDetails,
+                    ModpackModListElementFragment::modChangeVersionCallback to c::changeModVersion
                 )
 
                 hgrow = Priority.ALWAYS

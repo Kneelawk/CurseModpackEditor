@@ -4,7 +4,6 @@ import com.kneelawk.modpackeditor.curse.CurseApi
 import com.kneelawk.modpackeditor.data.AddonFile
 import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.SimpleAddonId
-import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
 import com.kneelawk.modpackeditor.ui.util.*
 import javafx.beans.binding.BooleanBinding
@@ -120,17 +119,7 @@ class ModVersionListFragment : Fragment() {
 
     private fun loadModList(): List<ModVersionListElement> {
         val files = curseApi.getAddonFiles(projectId).orEmpty()
-        return if (modListState.filterMinecraftVersion.value) {
-            files.filter { file ->
-                file.gameVersion.find { version ->
-                    MinecraftVersion.tryParse(version)?.let {
-                        it >= modListState.lowMinecraftVersion.value && it <= modListState.highMinecraftVersion.value
-                    } ?: false
-                } != null
-            }
-        } else {
-            files
-        }.sortedByDescending { it.fileDate }.map { file ->
+        return modListState.maybeFilterByMinecraftVersion(files).sortedByDescending { it.fileDate }.map { file ->
             ModVersionListElement(AddonFile(projectId, file))
         }
     }

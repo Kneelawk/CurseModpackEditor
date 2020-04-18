@@ -22,6 +22,9 @@ class ResourceCaches : Controller() {
     val smallImageCache: LoadingCache<String, Image> =
             CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(Duration.ofMinutes(10))
                     .build(CacheLoader.from { key: String? -> Image(key, 32.0, 32.0, true, true, true) })
+    val tinyImageCache: LoadingCache<String, Image> =
+            CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(Duration.ofMinutes(10))
+                    .build(CacheLoader.from { key: String? -> Image(key, 16.0, 16.0, true, true, true) })
 
     val addonCache: LoadingCache<Long, Optional<AddonJson>> =
             CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(Duration.ofMinutes(2))

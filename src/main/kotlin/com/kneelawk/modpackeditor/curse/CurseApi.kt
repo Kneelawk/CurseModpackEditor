@@ -1,12 +1,10 @@
 package com.kneelawk.modpackeditor.curse
 
 import com.kneelawk.modpackeditor.data.AddonId
-import com.kneelawk.modpackeditor.data.curseapi.AddonFileJson
-import com.kneelawk.modpackeditor.data.curseapi.AddonJson
-import com.kneelawk.modpackeditor.data.curseapi.MinecraftVersionJson
-import com.kneelawk.modpackeditor.data.curseapi.ModLoaderListElementJson
+import com.kneelawk.modpackeditor.data.curseapi.*
 import tornadofx.Controller
 import tornadofx.Rest
+import tornadofx.queryString
 import tornadofx.toModel
 import java.time.LocalDateTime
 
@@ -106,6 +104,25 @@ class CurseApi : Controller() {
     }
 
     /**
+     * Gets info about a single category.
+     */
+    fun getCategoryInfo(categoryId: Long): CategoryListElementData? {
+        val response = rest.get("https://addons-ecs.forgesvc.net/api/v2/category/$categoryId")
+        return if (response.ok()) {
+            response.one().toModel<CategoryListElementJson>()
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Gets Curse's list of categories.
+     */
+    fun getCategoryList(): List<CategoryListElementData> {
+        return rest.get("https://addons-ecs.forgesvc.net/api/v2/category").list().toModel<CategoryListElementJson>()
+    }
+
+    /**
      * Gets the list of minecraft versions.
      */
     fun getMinecraftVersionList(): List<MinecraftVersionJson> {
@@ -117,5 +134,25 @@ class CurseApi : Controller() {
      */
     fun getModLoaderList(): List<ModLoaderListElementJson> {
         return rest.get("https://addons-ecs.forgesvc.net/api/v2/minecraft/modloader").list().toModel()
+    }
+
+    /**
+     * Searches Curse's addon database using specified criteria.
+     */
+    fun getCurseAddonSearch(gameId: Long = 432, gameVersion: String? = null, sectionId: Long? = null,
+                            categoryId: Long? = null, searchFilter: String? = null, sort: Long = 1, pageSize: Long = 20,
+                            index: Long = 0): List<AddonData> {
+        val queryParams = hashMapOf<String, Any>()
+        queryParams += "gameId" to gameId
+        gameVersion?.let { queryParams += "gameVersion" to it }
+        sectionId?.let { queryParams += "sectionId" to it }
+        categoryId?.let { queryParams += "categoryId" to it }
+        searchFilter?.let { queryParams += "searchFilter" to it }
+        queryParams += "sort" to sort
+        queryParams += "pageSize" to pageSize
+        queryParams += "index" to index
+
+        return rest.get("https://addons-ecs.forgesvc.net/api/v2/addon/search${queryParams.queryString}").list()
+                .toModel<AddonJson>()
     }
 }

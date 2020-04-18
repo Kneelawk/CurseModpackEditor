@@ -3,6 +3,10 @@ package com.kneelawk.modpackeditor.curse
 import com.kneelawk.modpackeditor.data.curseapi.AddonData
 
 object AddonUtils {
+    fun getIconUrl(maybeUrl: String?): String {
+        return maybeUrl ?: javaClass.getResource("/com/kneelawk/modpackeditor/question.png").toExternalForm()
+    }
+
     fun getIconUrl(addon: AddonData?): String {
         return addon?.let {
             (addon.attachments.find { it.isDefault } ?: addon.attachments.firstOrNull())?.url ?: javaClass.getResource(
