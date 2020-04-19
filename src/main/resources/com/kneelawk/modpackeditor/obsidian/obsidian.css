@@ -35,11 +35,13 @@
     -obsidian-background2-hover-color: #464646;
     -obsidian-background2-disabled-color: #484848;
     -obsidian-background3-color: #464646;
+    -obsidian-background3-hover-color: #3c3c3c;
 
     -obsidian-highlight-color: #3192bb;
     -obsidian-select-color: #71abc6;
 
     -obsidian-focus-color: #606060;
+    -obsidian-border-color: #505050;
 
     -obsidian-default-color: #71abc6;
     -obsidian-default-focus-color: #8dcff1;
@@ -69,7 +71,10 @@
 
 .button,
 .check-box .box,
-.menu-bar, .menu-button {
+.combo-box,
+.combo-box .list-cell,
+.menu-bar, .menu-button,
+.titled-pane .title {
     -fx-background-radius: 0;
     -fx-background-color: -obsidian-background2-color;
 }
@@ -82,8 +87,14 @@
 .button:hover,
 .check-box:armed .box,
 .check-box:hover .box,
+.combo-box:armed,
+.combo-box:hover,
+.combo-box:armed .list-cell,
+.combo-box:hover .list-cell,
 .menu-button:armed,
-.menu-button:hover {
+.menu-button:hover,
+.titled-pane .title:armed,
+.titled-pane .title:hover {
     -fx-background-color: -obsidian-background2-hover-color;
 }
 
@@ -91,8 +102,14 @@
 .button:default:hover,
 .check-box:armed:default .box,
 .check-box:default:hover .box,
+.combo-box:armed:default,
+.combo-box:default:hover,
+.combo-box:armed:default .list-cell,
+.combo-box:default:hover .list-cell,
 .menu-button:armed:default,
-.menu-button:default:hover {
+.menu-button:default:hover,
+.titled-pane:default .title:armed,
+.titled-pane:default .title:hover {
     -fx-background-color: -obsidian-default-hover-color;
 }
 
@@ -100,8 +117,12 @@
 .button:default:focused:hover,
 .check-box:armed:default:focused .box,
 .check-box:default:focused:hover .box,
+.combo-box:armed:default:focused,
+.combo-box:default:focused:hover,
 .menu-button:armed:default:focused,
-.menu-button:default:focused:hover {
+.menu-button:default:focused:hover,
+.titled-pane:default:focused .title:armed,
+.titled-pane:default:focused .title:hover {
     -fx-background-color: -obsidian-default-focus-color, -obsidian-default-hover-color;
     -fx-background-insets: 0, 1;
 }
@@ -110,36 +131,97 @@
 .button:focused:hover,
 .check-box:armed:focused .box,
 .check-box:focused:hover .box,
+.combo-box:armed:focused,
+.combo-box:focused:hover,
 .menu-button:armed:focused,
-.menu-button:focused:hover {
+.menu-button:focused:hover,
+.titled-pane:focused .title:armed,
+.titled-pane:focused .title:hover {
     -fx-background-color: -obsidian-focus-color, -obsidian-background2-hover-color;
     -fx-background-insets: 0, 1;
 }
 
 .button:default,
 .check-box:default .box,
-.menu-button:default {
+.combo-box:default,
+.combo-box:default .list-cell,
+.menu-button:default,
+.titled-pane:default .title {
     -fx-background-color: -obsidian-default-color;
 }
 
 .button:default:focused,
 .check-box:default:focused .box,
-.menu-button:default:focused {
+.combo-box:default:focused,
+.menu-button:default:focused,
+.titled-pane:default:focused .title {
     -fx-background-color: -obsidian-default-focus-color, -obsidian-default-color;
     -fx-background-insets: 0, 1;
 }
 
 .button:disabled,
 .check-box:disabled .bo,
-.menu-button:disabled {
+.combo-box:disabled,
+.combo-box:disabled .list-cell,
+.menu-button:disabled,
+.titled-pane:disabled .title {
     -fx-opacity: -fx-disabled-opacity;
 }
 
 .button:focused,
 .check-box:focused .box,
-.menu-button:focused {
+.combo-box:focused,
+.menu-button:focused,
+.titled-pane:focused .title {
     -fx-background-color: -obsidian-focus-color, -obsidian-background2-color;
     -fx-background-insets: 0, 1;
+}
+
+/* Combo Boxes */
+
+.combo-box:armed:default:focused .list-cell,
+.combo-box:default:focused:hover .list-cell {
+    -fx-background-color: -obsidian-default-focus-color, -obsidian-default-hover-color;
+    -fx-background-insets: 0, 1 0 1 1;
+}
+
+.combo-box:armed:focused .list-cell,
+.combo-box:focused:hover .list-cell {
+    -fx-background-color: -obsidian-focus-color, -obsidian-background2-hover-color;
+    -fx-background-insets: 0, 1 0 1 1;
+}
+
+.combo-box:default:focused .list-cell {
+    -fx-background-color: -obsidian-default-focus-color, -obsidian-default-color;
+    -fx-background-insets: 0, 1 0 1 1;
+}
+
+.combo-box:focused .list-cell {
+    -fx-background-color: -obsidian-focus-color, -obsidian-background2-color;
+    -fx-background-insets: 0, 1 0 1 1;
+}
+
+.combo-box .combo-box-popup .list-cell {
+    -fx-background-radius: 0;
+    -fx-background-color: -obsidian-background1-color, -obsidian-background3-color;
+    -fx-background-insets: 0, 0 0 1 0;
+}
+
+.combo-box .combo-box-popup .list-cell:odd {
+    -fx-background-color: -obsidian-background1-color, derive(-obsidian-background3-color, -5%);
+    -fx-background-insets: 0, 0 0 1 0;
+}
+
+.combo-box .combo-box-popup .list-cell:hover {
+    -fx-text-fill: -obsidian-text-color;
+    -fx-background-radius: 0;
+    -fx-background-color: -obsidian-background1-color, -obsidian-background3-hover-color;
+    -fx-background-insets: 0, 0 0 1 0;
+}
+
+.combo-box .combo-box-popup .list-cell:selected {
+    -fx-background-color: -obsidian-background1-color, -obsidian-select-color;
+    -fx-background-insets: 0, 0 0 1 0;
 }
 
 /* Progress Bars */
@@ -375,6 +457,12 @@
 .text-field:focused {
     -fx-background-color: -obsidian-focus-color, -obsidian-background2-color;
     -fx-background-insets: 0, 1;
+}
+
+/* Titled Pane */
+
+.titled-pane .content {
+    -fx-border-color: -obsidian-border-color;
 }
 
 /* TornadoFX Internal Window */
