@@ -39,7 +39,7 @@ class ModpackEditorMainView : View("Modpack Editor") {
                         c.duplicateModpack()
                     }
                 }
-                item("Close Project", "Shortcut+Q") {
+                item("Close Project", "Shortcut+W") {
                     action {
                         close()
                     }
