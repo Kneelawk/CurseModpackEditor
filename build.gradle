@@ -16,6 +16,7 @@ project.ext.tornadofxVersion = '1.7.20'
 project.ext.jfxVersion = '14'
 project.ext.guavaVersion = '28.2-jre'
 project.ext.commonsCodecVersion = '1.14'
+project.ext.arrowVersion = '0.10.5'
 
 // Future versions introduce a bug which breaks some url formatting
 project.ext.httpClientVersion = '4.5.6'
@@ -39,6 +40,7 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
+    implementation "io.arrow-kt:arrow-core:$arrowVersion"
 
     implementation("no.tornado:tornadofx:$tornadofxVersion") {
         exclude group: "org.jetbrains.kotlin"

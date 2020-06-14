@@ -24,8 +24,16 @@ class ElementUtils : Controller() {
         return cache.smallImageCache[AddonUtils.getIconUrl(url)]
     }
 
+    fun loadSmallImage(addon: AddonData?): Image {
+        return cache.smallImageCache[AddonUtils.getIconUrl(addon)]
+    }
+
     fun loadSmallImage(projectId: Long?): Image {
-        return cache.smallImageCache[AddonUtils.getIconUrl(projectId?.let { cache.addonCache[it].orNull() })]
+        return loadSmallImage(projectId?.let { cache.addonCache[it].orNull() })
+    }
+
+    fun loadSmallImage(addonId: AddonId?): Image {
+        return loadSmallImage(addonId?.projectId)
     }
 
     fun loadImage(url: String?): Image {

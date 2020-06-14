@@ -21,6 +21,7 @@ class ProgressDialog : Fragment() {
     override val root = vbox {
         padding = insets(25.0)
         spacing = 10.0
+        minWidth = 500.0
 
         label(titleString) {
             style {

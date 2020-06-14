@@ -46,14 +46,19 @@ class ModpackEditorMainView : View("Modpack Editor") {
                 }
             }
             menu("Tools") {
-                item("Update Modpack...") {
+                item("Scan Mod Dependencies...") {
                     action {
-                        c.runModpackUpdater()
+                        c.scanModDependencies()
                     }
                 }
                 item("Sort Mods By Name...") {
                     action {
                         c.sortMods()
+                    }
+                }
+                item("Update Modpack...") {
+                    action {
+                        c.runModpackUpdater()
                     }
                 }
             }

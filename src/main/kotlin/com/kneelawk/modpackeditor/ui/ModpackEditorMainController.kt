@@ -1,6 +1,7 @@
 package com.kneelawk.modpackeditor.ui
 
 import com.kneelawk.modpackeditor.curse.ModpackFile
+import com.kneelawk.modpackeditor.ui.dependency.DependencyCollectorFragment
 import com.kneelawk.modpackeditor.ui.update.ModpackUpdateView
 import com.kneelawk.modpackeditor.ui.util.ErrorOpeningModpackDialog
 import com.kneelawk.modpackeditor.ui.util.ModListState
@@ -129,7 +130,7 @@ class ModpackEditorMainController : Controller() {
 
     fun sortMods() {
         val openProperty = SimpleBooleanProperty(true)
-        val task = modListState.sortAddons()
+        val task = modListState.sortModpackModsTask()
         task.finally { openProperty.value = false }
         find<ModpackEditorMainView>().openInternalWindow(
             find<ProgressDialog>(
@@ -142,5 +143,11 @@ class ModpackEditorMainController : Controller() {
                 }
             )
         )
+    }
+
+    fun scanModDependencies() {
+        find<DependencyCollectorFragment>(
+            DependencyCollectorFragment::roots to model.modpackMods
+        ).openModal(modality = Modality.WINDOW_MODAL, owner = find<ModpackEditorMainView>().currentWindow)
     }
 }

@@ -1,12 +1,12 @@
 package com.kneelawk.modpackeditor.ui.util
 
-import com.kneelawk.modpackeditor.cache.ResourceCaches
 import com.kneelawk.modpackeditor.data.AddonId
-import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.curseapi.AddonFileData
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
+import com.kneelawk.modpackeditor.tasks.RequiredDependency
 import com.kneelawk.modpackeditor.ui.ModpackModel
+import com.kneelawk.modpackeditor.curse.ModListUtils
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -15,15 +15,14 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import tornadofx.Controller
-import tornadofx.runLater
-import tornadofx.task
+import tornadofx.success
 
 /**
  * Created by Kneelawk on 4/10/20.
  */
 class ModListState : Controller() {
     private val model: ModpackModel by inject()
-    private val cache: ResourceCaches by inject()
+    private val utils: ModListUtils by inject()
 
     private val editingMods = SimpleSetProperty<Long>(FXCollections.observableSet())
     val filterMinecraftVersion = SimpleBooleanProperty(true)
@@ -75,31 +74,14 @@ class ModListState : Controller() {
         model.modpackMods.removeIf { it.projectId == projectId }
     }
 
-    fun sortAddons(): Task<Unit> {
-        val editingList = ArrayList(model.modpackMods)
-        return task {
-            val sortCached = HashSet<SimpleAddonId>()
-            editingList.sortBy {
-                if (!isCancelled) {
-                    updateMessage("Getting info: ${it.projectId}/${it.fileId}")
-                    val name = cache.addonCache[it.projectId].orNull()?.name?.toLowerCase() ?: ""
-                    sortCached.add(SimpleAddonId(it))
-                    updateProgress(sortCached.size.toLong(), editingList.size.toLong())
-                    name
-                } else {
-                    it.projectId.toString()
-                }
-            }
-
-            updateMessage("Sorting finished.")
-            updateProgress(editingList.size.toLong(), editingList.size.toLong())
-
-            runLater {
-                if (!isCancelled) {
-                    model.modpackMods.setAll(editingList)
-                }
-            }
+    fun sortModpackModsTask(): Task<List<FileJson>> {
+        return utils.sortAddonsTask(model.modpackMods).success {
+            model.modpackMods.setAll(it)
         }
+    }
+
+    fun collectDependenciesTask(addons: List<AddonId>, selectedVersions: Map<Long, Long>, ignored: Set<Long>): Task<List<RequiredDependency>> {
+        return utils.collectDependenciesTask(addons, selectedVersions, ignored, lowMinecraftVersion.value, highMinecraftVersion.value)
     }
 
     fun modInstalledProperty(projectId: ObservableValue<out Number?>): BooleanBinding {
@@ -116,28 +98,8 @@ class ModListState : Controller() {
         }
     }
 
-    fun containsByMinecraftVersion(files: List<AddonFileData>): Boolean {
-        val low = lowMinecraftVersion.value
-        val high = highMinecraftVersion.value
-        return files.find { file ->
-            file.gameVersion.find { version ->
-                MinecraftVersion.tryParse(version)?.let {
-                    it >= low && it <= high
-                } ?: false
-            } != null
-        } != null
-    }
-
     fun filterByMinecraftVersion(files: List<AddonFileData>): List<AddonFileData> {
-        val low = lowMinecraftVersion.value
-        val high = highMinecraftVersion.value
-        return files.filter { file ->
-            file.gameVersion.find { version ->
-                MinecraftVersion.tryParse(version)?.let {
-                    it >= low && it <= high
-                } ?: false
-            } != null
-        }
+        return utils.filterByMinecraftVersion(files, lowMinecraftVersion.value, highMinecraftVersion.value)
     }
 
     fun maybeFilterByMinecraftVersion(files: List<AddonFileData>): List<AddonFileData> {
@@ -146,5 +108,9 @@ class ModListState : Controller() {
         } else {
             files
         }
+    }
+
+    fun latestByMinecraftVersion(projectId: Long): AddonFileData? {
+        return utils.latestByMinecraftVersion(projectId, lowMinecraftVersion.value, highMinecraftVersion.value)
     }
 }

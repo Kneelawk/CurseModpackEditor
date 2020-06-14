@@ -5,6 +5,7 @@ import com.kneelawk.modpackeditor.data.curseapi.AddonData
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
 import com.kneelawk.modpackeditor.ui.util.ModListState
+import com.kneelawk.modpackeditor.curse.ModListUtils
 import com.kneelawk.modpackeditor.ui.util.asyncExpression
 import javafx.geometry.Pos
 import javafx.scene.layout.Priority
@@ -18,6 +19,7 @@ class AddModsElementFragment : ListCellFragment<AddonData>() {
     private val elementUtils: ElementUtils by inject()
     private val curseApi: CurseApi by inject()
     private val modListState: ModListState by inject()
+    private val modListUtils: ModListUtils by inject()
 
     val detailsCallback: (AddonData) -> Unit by param()
     val filesCallback: (AddonData) -> Unit by param()
@@ -33,14 +35,8 @@ class AddModsElementFragment : ListCellFragment<AddonData>() {
     }
     private val isCompatible = compatibilityCheck.asyncExpression({ AddonCompatibilityState.LOADING }) { maybeCheck ->
         val found = maybeCheck?.let { check ->
-            val files = curseApi.getAddonFiles(check.addonData.id).orEmpty()
-            files.find { file ->
-                file.gameVersion.find { version ->
-                    MinecraftVersion.tryParse(version)?.let {
-                        it >= check.lowMinecraftVersion && it <= check.highMinecraftVersion
-                    } ?: false
-                } != null
-            } != null
+            modListUtils.hasForMinecraftVersion(check.addonData.id, check.lowMinecraftVersion,
+                check.highMinecraftVersion)
         }
         if (found == true) {
             AddonCompatibilityState.COMPATIBLE

@@ -2,6 +2,7 @@ package com.kneelawk.modpackeditor
 
 import com.kneelawk.modpackeditor.net.setupRestEngine
 import com.kneelawk.modpackeditor.net.shutdownCustomClient
+import com.kneelawk.modpackeditor.tasks.shutdownThreadPool
 import com.kneelawk.modpackeditor.ui.ModpackEditorStartView
 import tornadofx.App
 import tornadofx.importStylesheet
@@ -21,5 +22,6 @@ class ModpackEditorApp : App(ModpackEditorStartView::class) {
     override fun stop() {
         super.stop()
         shutdownCustomClient()
+        shutdownThreadPool()
     }
 }

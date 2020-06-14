@@ -105,8 +105,7 @@ class AddModsController : Controller() {
     fun installLatest(addon: AddonData) {
         modListState.startEditing(addon.id)
         runAsync {
-            val files = curseApi.getAddonFiles(addon.id).orEmpty()
-            val latest = modListState.filterByMinecraftVersion(files).maxBy { it.fileDate }
+            val latest = modListState.latestByMinecraftVersion(addon.id)
             runLater {
                 latest?.let {
                     modListState.addAddon(SimpleAddonId(addon.id, it.id))
