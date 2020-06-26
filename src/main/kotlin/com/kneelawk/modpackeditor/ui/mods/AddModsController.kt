@@ -107,7 +107,7 @@ class AddModsController : Controller() {
         runAsync {
             val latest = modListState.latestByMinecraftVersion(addon.id)
             runLater {
-                latest?.let {
+                latest.map {
                     modListState.addAddon(SimpleAddonId(addon.id, it.id))
                 }
                 modListState.finishEditing(addon.id)

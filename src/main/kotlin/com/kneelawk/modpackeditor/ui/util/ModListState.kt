@@ -1,5 +1,7 @@
 package com.kneelawk.modpackeditor.ui.util
 
+import arrow.core.Either
+import com.kneelawk.modpackeditor.curse.AddonVersionSelectionError
 import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.curseapi.AddonFileData
 import com.kneelawk.modpackeditor.data.manifest.FileJson
@@ -80,9 +82,9 @@ class ModListState : Controller() {
         }
     }
 
-    fun collectDependenciesTask(addons: List<AddonId>, selectedVersions: Map<Long, Long>, ignored: Set<Long>): Task<List<RequiredDependency>> {
-        return utils.collectDependenciesTask(addons, selectedVersions, ignored, lowMinecraftVersion.value, highMinecraftVersion.value)
-    }
+//    fun collectDependenciesTask(addons: List<AddonId>, selectedVersions: Map<Long, Long>, ignored: Set<Long>): Task<List<RequiredDependency>> {
+//        return utils.collectDependenciesTask(addons, selectedVersions, ignored, lowMinecraftVersion.value, highMinecraftVersion.value)
+//    }
 
     fun modInstalledProperty(projectId: ObservableValue<out Number?>): BooleanBinding {
         return model.modpackMods.containsWhereProperty(projectId) { file, id -> file.projectId == id?.toLong() }
@@ -110,7 +112,7 @@ class ModListState : Controller() {
         }
     }
 
-    fun latestByMinecraftVersion(projectId: Long): AddonFileData? {
+    fun latestByMinecraftVersion(projectId: Long): Either<AddonVersionSelectionError, AddonFileData> {
         return utils.latestByMinecraftVersion(projectId, lowMinecraftVersion.value, highMinecraftVersion.value)
     }
 }

@@ -8,11 +8,6 @@ import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.SimpleAddonId
 import com.kneelawk.modpackeditor.data.curseapi.AddonFileData
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
-import com.kneelawk.modpackeditor.tasks.CollectDependenciesResult
-import com.kneelawk.modpackeditor.tasks.CollectDependenciesTask
-import com.kneelawk.modpackeditor.tasks.chain.flatMap
-import com.kneelawk.modpackeditor.tasks.chain.map
-import com.kneelawk.modpackeditor.tasks.execAsync
 import javafx.concurrent.Task
 import tornadofx.Controller
 import tornadofx.task
@@ -50,16 +45,16 @@ class ModListUtils : Controller() {
         }
     }
 
-    fun collectDependenciesTask(addons: List<AddonId>, selectedVersions: Map<Long, Long>, ignored: Set<Long>,
-                                lowMinecraftVersion: MinecraftVersion,
-                                highMinecraftVersion: MinecraftVersion): Task<CollectDependenciesResult> {
-        return CollectDependenciesTask(addons, selectedVersions, ignored, lowMinecraftVersion,
-            highMinecraftVersion).flatMap { res ->
-            sortAddonsTask(res.required).map {
-                CollectDependenciesResult(it, res.unresolved)
-            }
-        }.execAsync()
-    }
+//    fun collectDependenciesTask(addons: List<AddonId>, selectedVersions: Map<Long, Long>, ignored: Set<Long>,
+//                                lowMinecraftVersion: MinecraftVersion,
+//                                highMinecraftVersion: MinecraftVersion): Task<CollectDependenciesResult> {
+//        return CollectDependenciesTask(addons, selectedVersions, ignored, lowMinecraftVersion,
+//            highMinecraftVersion).flatMap { res ->
+//            sortAddonsTask(res.required).map {
+//                CollectDependenciesResult(it, res.unresolved)
+//            }
+//        }.execAsync()
+//    }
 
     fun containsByMinecraftVersion(files: List<AddonFileData>, low: MinecraftVersion, high: MinecraftVersion): Boolean {
         return files.find { file ->
@@ -76,8 +71,10 @@ class ModListUtils : Controller() {
         return containsByMinecraftVersion(files, low, high)
     }
 
-    fun filterByMinecraftVersion(files: List<AddonFileData>, low: MinecraftVersion,
-                                 high: MinecraftVersion): List<AddonFileData> {
+    fun filterByMinecraftVersion(
+        files: List<AddonFileData>, low: MinecraftVersion,
+        high: MinecraftVersion
+    ): List<AddonFileData> {
         return files.filter { file ->
             file.gameVersion.find { version ->
                 MinecraftVersion.tryParse(version)?.let {
@@ -87,13 +84,17 @@ class ModListUtils : Controller() {
         }
     }
 
-    fun latestByMinecraftVersion(files: List<AddonFileData>, low: MinecraftVersion,
-                                 high: MinecraftVersion): AddonFileData? {
+    fun latestByMinecraftVersion(
+        files: List<AddonFileData>, low: MinecraftVersion,
+        high: MinecraftVersion
+    ): AddonFileData? {
         return filterByMinecraftVersion(files, low, high).maxBy { it.fileDate }
     }
 
-    fun latestByMinecraftVersion(projectId: Long, low: MinecraftVersion,
-                                 high: MinecraftVersion): Either<AddonVersionSelectionError, AddonFileData> {
+    fun latestByMinecraftVersion(
+        projectId: Long, low: MinecraftVersion,
+        high: MinecraftVersion
+    ): Either<AddonVersionSelectionError, AddonFileData> {
         val files = curseApi.getAddonFiles(projectId) ?: return Left(AddonVersionSelectionError.UnknownAddon)
         if (files.isEmpty()) return Left(AddonVersionSelectionError.NoFiles)
         return latestByMinecraftVersion(files, low, high).rightIfNotNull {

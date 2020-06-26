@@ -58,7 +58,7 @@ class DependencyCollectorFragment : Fragment() {
             maxWidth = Double.MAX_VALUE
             enableWhen(collecting.not())
             action {
-                scanModDependencies()
+//                scanModDependencies()
             }
         }
         label(collectStatus)
@@ -107,23 +107,23 @@ class DependencyCollectorFragment : Fragment() {
         }
     }
 
-    private fun scanModDependencies() {
-        collecting.value = true
-        val task = modListState.collectDependenciesTask(roots, mapOf(), model.modpackMods.map { it.projectId }.toSet())
-        collectProgress.bind(task.progressProperty())
-        collectStatus.bind(task.messageProperty())
-        task.success { list ->
-            collecting.value = false
-            collectedDependencies.setAll(list.map {
-                DependencyCollectorElement(
-                    SimpleBooleanProperty(it.highestPriority.type higherPriorityThan DependencyType.OPTIONAL), it)
-            })
-        }
-        task.fail {
-            collecting.value = false
-        }
-        task.cancel {
-            collecting.value = false
-        }
-    }
+//    private fun scanModDependencies() {
+//        collecting.value = true
+//        val task = modListState.collectDependenciesTask(roots, mapOf(), model.modpackMods.map { it.projectId }.toSet())
+//        collectProgress.bind(task.progressProperty())
+//        collectStatus.bind(task.messageProperty())
+//        task.success { list ->
+//            collecting.value = false
+//            collectedDependencies.setAll(list.map {
+//                DependencyCollectorElement(
+//                    SimpleBooleanProperty(it.highestPriority.type higherPriorityThan DependencyType.OPTIONAL), it)
+//            })
+//        }
+//        task.fail {
+//            collecting.value = false
+//        }
+//        task.cancel {
+//            collecting.value = false
+//        }
+//    }
 }
