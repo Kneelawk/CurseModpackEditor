@@ -1,7 +1,6 @@
 package com.kneelawk.modpackeditor.ui.dependency
 
 import com.kneelawk.modpackeditor.data.AddonId
-import com.kneelawk.modpackeditor.tasks.DependencyType
 import com.kneelawk.modpackeditor.ui.ModpackEditorMainController
 import com.kneelawk.modpackeditor.ui.ModpackModel
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
@@ -39,8 +38,9 @@ class DependencyCollectorFragment : Fragment() {
     private val collecting = SimpleBooleanProperty(false)
     private val collectProgress = SimpleDoubleProperty(0.0)
     private val collectStatus = SimpleStringProperty("Not collected.")
+    private val errorStatus = SimpleStringProperty("No errors.")
 
-    private val collectedDependencies = listProperty<DependencyCollectorElement>(FXCollections.observableArrayList())
+    private val requiredDependencies = listProperty<RequiredDependencyCollectorElement>(FXCollections.observableArrayList())
 
     override val root = vbox {
         padding = insets(25.0)
@@ -66,26 +66,56 @@ class DependencyCollectorFragment : Fragment() {
             maxWidth = Double.MAX_VALUE
         }
 
-        tableview(collectedDependencies) {
-            column("Add", DependencyCollectorElement::enabled) {
-                prefWidth(50.0)
-                minWidth(50.0)
-                cellFragment(DependencyCollectorEnableFragment::class)
-                makeEditable()
-            }
-            readonlyColumn("Info", DependencyCollectorElement::dependency) {
-                prefWidth(800.0)
-                minWidth(500.0)
-                cellFragment(DependencyCollectorInfoFragment::class)
+        tabpane {
+            tab("Required") {
+                isClosable = false
+
+                vbox {
+                    padding = insets(10.0)
+                    spacing = 10.0
+
+                    tableview(requiredDependencies) {
+                        readonlyColumn("Info", RequiredDependencyCollectorElement::dependency) {
+                            prefWidth(800.0)
+                            minWidth(500.0)
+                            cellFragment(RequiredDependencyCollectorInfoFragment::class)
+                        }
+                        column("Add", RequiredDependencyCollectorElement::enabled) {
+                            prefWidth(50.0)
+                            minWidth(50.0)
+                            cellFragment(RequiredDependencyCollectorEnableFragment::class)
+                            makeEditable()
+                        }
+
+                        columnResizePolicy = SmartResize.POLICY
+
+                        hgrow = Priority.ALWAYS
+                        vgrow = Priority.ALWAYS
+                        maxWidth = Double.MAX_VALUE
+                        maxHeight = Double.MAX_VALUE
+                    }
+                }
             }
 
-            columnResizePolicy = SmartResize.POLICY
+            tab("Optional") {
+                isClosable = false
 
-            hgrow = Priority.ALWAYS
-            vgrow = Priority.ALWAYS
-            maxWidth = Double.MAX_VALUE
-            maxHeight = Double.MAX_VALUE
+                vbox {
+                    padding = insets(10.0)
+                    spacing = 10.0
+
+                    treetableview<RequiredDependencyCollectorElement> {
+                        column("Info", RequiredDependencyCollectorElement::dependency) {
+                            prefWidth(800.0)
+                            minWidth(500.0)
+//                            paramCell
+                        }
+                    }
+                }
+            }
         }
+
+        label(errorStatus)
     }
 
     override fun onBeforeShow() {

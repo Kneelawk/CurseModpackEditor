@@ -1,6 +1,6 @@
 package com.kneelawk.modpackeditor.ui.dependency
 
-import com.kneelawk.modpackeditor.tasks.RequiredDependency
+import com.kneelawk.modpackeditor.tasks.Dependency
 import com.kneelawk.modpackeditor.ui.util.ElementUtils
 import com.kneelawk.modpackeditor.ui.util.asyncExpression
 import javafx.beans.property.BooleanProperty
@@ -9,14 +9,14 @@ import javafx.scene.text.FontWeight
 import tornadofx.*
 
 /**
- * Represents an element in a list of collected dependencies.
+ * Represents an element in a list of required collected dependencies.
  */
-data class DependencyCollectorElement(val enabled: BooleanProperty, val dependency: RequiredDependency)
+data class RequiredDependencyCollectorElement(val enabled: BooleanProperty, val dependency: Dependency)
 
 /**
  * Table cell type that handles displaying of the element's enabled property along with invalidation logic.
  */
-class DependencyCollectorEnableFragment : TableCellFragment<DependencyCollectorElement, Boolean>() {
+class RequiredDependencyCollectorEnableFragment : TableCellFragment<RequiredDependencyCollectorElement, Boolean>() {
     override val root = vbox {
         padding = insets(5.0)
         alignment = Pos.CENTER
@@ -28,7 +28,7 @@ class DependencyCollectorEnableFragment : TableCellFragment<DependencyCollectorE
 /**
  * Table cell type that handles displaying info about a dependency.
  */
-class DependencyCollectorInfoFragment : TableCellFragment<DependencyCollectorElement, RequiredDependency>() {
+class RequiredDependencyCollectorInfoFragment : TableCellFragment<RequiredDependencyCollectorElement, Dependency>() {
     private val elementUtils: ElementUtils by inject()
 
     override val root = hbox {
@@ -44,8 +44,10 @@ class DependencyCollectorInfoFragment : TableCellFragment<DependencyCollectorEle
             hbox {
                 spacing = 10.0
                 alignment = Pos.BOTTOM_LEFT
-                label(itemProperty.asyncExpression({ it?.projectId?.toString() ?: "" },
-                    { elementUtils.loadModName(it) })) {
+                label(
+                    itemProperty.asyncExpression({ it?.projectId?.toString() ?: "" },
+                        { elementUtils.loadModName(it) })
+                ) {
                     style {
                         fontWeight = FontWeight.BOLD
                         fontSize = 16.px
@@ -57,8 +59,10 @@ class DependencyCollectorInfoFragment : TableCellFragment<DependencyCollectorEle
             hbox {
                 spacing = 10.0
                 alignment = Pos.BOTTOM_LEFT
-                label(itemProperty.asyncExpression({ it?.fileId?.toString() ?: "" },
-                    { elementUtils.loadModFileDisplay(it) }))
+                label(
+                    itemProperty.asyncExpression({ it?.fileId?.toString() ?: "" },
+                        { elementUtils.loadModFileDisplay(it) })
+                )
                 label("-")
                 label(itemProperty.asyncExpression({ "loading..." }, { elementUtils.loadModFileName(it) }))
             }

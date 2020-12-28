@@ -6,7 +6,6 @@ import com.kneelawk.modpackeditor.data.AddonId
 import com.kneelawk.modpackeditor.data.curseapi.AddonFileData
 import com.kneelawk.modpackeditor.data.manifest.FileJson
 import com.kneelawk.modpackeditor.data.version.MinecraftVersion
-import com.kneelawk.modpackeditor.tasks.RequiredDependency
 import com.kneelawk.modpackeditor.ui.ModpackModel
 import com.kneelawk.modpackeditor.curse.ModListUtils
 import javafx.beans.binding.BooleanBinding

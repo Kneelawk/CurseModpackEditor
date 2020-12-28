@@ -1,15 +1,7 @@
 package com.kneelawk.modpackeditor.tasks
 
-import arrow.core.Either
-import arrow.core.Right
-import com.kneelawk.modpackeditor.cache.ResourceCaches
 import com.kneelawk.modpackeditor.curse.AddonVersionSelectionError
-import com.kneelawk.modpackeditor.curse.ModListUtils
 import com.kneelawk.modpackeditor.data.AddonId
-import com.kneelawk.modpackeditor.data.SimpleAddonId
-import com.kneelawk.modpackeditor.data.version.MinecraftVersion
-import javafx.concurrent.Task
-import tornadofx.find
 
 /**
  * Collects a list of dependencies for the list of addons.
@@ -97,30 +89,36 @@ import tornadofx.find
  * @param optional a list of all the optional dependencies of the root addons successfully collected.
  * @param unresolved a list of all the dependencies that were encountered but couldn't be resolved.
  */
-data class CollectDependenciesResult(val required: Collection<RequiredDependency>,
-                                     val optional: Collection<OptionalDependency>,
-                                     val unresolved: Map<Long, AddonVersionSelectionError>)
+data class CollectDependenciesResult(
+    val required: Collection<Dependency>,
+    val optional: Collection<OptionalDependency>,
+    val unresolved: Map<Long, AddonVersionSelectionError>
+)
 
 /**
  * Gives info about a required dependency.
  */
-data class RequiredDependency(val addonId: AddonId, val requiredBy: Set<AddonId>) : AddonId {
+data class Dependency(val addonId: AddonId, val requiredBy: Collection<AddonId>) : AddonId {
     override val projectId: Long
         get() = addonId.projectId
     override val fileId: Long
         get() = addonId.fileId
 
-    fun withRequiredBy(requirement: AddonId): RequiredDependency {
+    fun withRequiredBy(requirement: AddonId): Dependency {
         return if (requiredBy.contains(requirement)) this
-        else RequiredDependency(addonId, requiredBy + requirement)
+        else Dependency(addonId, requiredBy + requirement)
     }
 }
 
 /**
  * Gives info about an optional dependency.
  */
-data class OptionalDependency(val addonId: AddonId, val dependencies: Set<AddonId>, val requiredBy: Set<AddonId>) :
-        AddonId {
+data class OptionalDependency(
+    val addonId: AddonId,
+    val dependencies: Collection<AddonId>,
+    val requiredBy: Collection<AddonId>
+) :
+    AddonId {
     override val projectId: Long
         get() = addonId.projectId
     override val fileId: Long
@@ -130,11 +128,20 @@ data class OptionalDependency(val addonId: AddonId, val dependencies: Set<AddonI
         return if (requiredBy.contains(requirement)) this
         else OptionalDependency(addonId, dependencies, requiredBy + requirement)
     }
+
+    fun toDependency(): Dependency {
+        return Dependency(addonId, requiredBy)
+    }
+
+    fun depsAsDependencies(): Collection<Dependency> {
+        return dependencies.map { Dependency(it, requiredBy) }
+    }
 }
 
 /**
  * The type of a dependencies relation.
  */
+@Deprecated("Please use Dependency/OptionalDependency instead.")
 enum class DependencyType {
     REQUIRED,
     OPTIONAL,
